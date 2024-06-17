@@ -1,0 +1,35 @@
+site_name: Mistral on AWS
+copyright: Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+theme:
+  name: material
+  icon:
+    annotation: material/plus-circle-outline
+    repo: material/github
+  palette:
+  - media: "(prefers-color-scheme: light)"
+    scheme: default
+    primary: white
+    accent: deep purple
+    toggle:
+      icon: material/weather-night
+      name: "Switch to dark mode"
+  - media: "(prefers-color-scheme: dark)"
+    scheme: slate
+    primary: black
+    accent: deep purple
+    toggle:
+      icon: material/weather-sunny
+      name: "Switch to light mode"
+  features:
+    - header.autohide
+    - content.code.copy
+    - content.code.annotate
+    - navigation.indexes
+    - navigation.footer
+    - navigation.top
+    - navigation.tabs
+repo_url: https://github.com/aws-samples/bedrock-mistral-prompting-examples
+repo_name: aws-samples/bedrock-mistral-prompting-examples
+nav:
+  - Home: index.md
+  - Notebooks: notebooks.md
