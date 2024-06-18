@@ -14,7 +14,6 @@ jobs:
         - name: Install dependencies
           run: |
             pip install --upgrade pip
-            pip install .  
             pip install mkdocs-material mkdocstrings[python] mkdocs-click
         - name: Deploy
           run: mkdocs gh-deploy --force
