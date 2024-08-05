@@ -29,8 +29,8 @@ See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more inform
 
 ## Distributors
 
-### AWS
-### Mistral 
+- AWS
+- Mistral 
 
 ## License
 
