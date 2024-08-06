@@ -14,7 +14,7 @@ Open a PR if you would like to contribute! :twisted_rightwards_arrows:
   Check out the notebook: [Large_2_release_highlights](notebooks/Large_2_release_highlights.ipynb)
 
 - 7/29 Mistral release 6
-  1. [Large_2_release_highlights](notebooks/Large_2_release_highlights.ipynb)
+  1. [Large_2_release_highlights](notebooks/Large_2_Release_Highlights.ipynb)
   2. [Deploy Mixtral 8x7b with NVIDIA NIM on Amazon SageMaker](notebooks/NIM-inference-samples/mixtral_8x7b_Nvidia_nim.ipynb)
   3. [Fine-tune Mixtral 8x7B (MoE) model with QLoRA](notebooks/mixtral-8x7b-qlora-finetune.ipynb)
 
