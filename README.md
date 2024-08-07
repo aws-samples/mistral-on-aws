@@ -11,7 +11,7 @@ Open a PR if you would like to contribute! :twisted_rightwards_arrows:
   
   Check out the blog post: [Mistral Large 2 is now on Bedrock](https://aws.amazon.com/blogs/machine-learning/mistral-large-2-is-now-available-in-amazon-bedrock/)
   
-  Check out the notebook: [Large_2_release_highlights](notebooks/Large_2_release_Highlights.ipynb)
+  Check out the notebook: [Large_2_release_highlights](notebooks/Large_2_Release_Highlights.ipynb)
 
 - 7/29 Mistral release 6
   1. [Large_2_release_highlights](notebooks/Large_2_Release_Highlights.ipynb)
