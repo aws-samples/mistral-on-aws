@@ -1,0 +1,201 @@
+{
+  "C2345678901": {
+    "profile": {
+      "name": "Cody Johnson",
+      "member_id": "C2345678901",
+      "address": "6785 Mistral Drive , Dallas Tx 15241"
+    },
+
+    "insurance": {
+      "name": "Apex Health",
+      "payer_id": 345678,
+      "payer_id_type": "Group Number",
+      "policy_name": "PPO Plan",
+      "policy_information": 567890,
+      "plan_name": "PPO 500",
+      "pcp": "Dr. Perry",
+      "pcp_id": 456168868
+    },
+    "claims": [
+      {
+        "claim": "34567890123",
+        "type": "Medical",
+        "provider": {
+          "name": "Southwest Medical Center",
+          "provider_id": 2345678901,
+          "provider_id_type": "TIN",
+          "provider_billing_address": "100 Main St, Dallas, TX 75201"
+        },
+        "date": {
+          "start_date": 20210201,
+          "end_date": 20210203
+        },
+        "charges": {
+          "price_billed": 2500,
+          "negotiated_price": 2000,
+          "insurance_paid": 1500,
+          "patient_responsibility": 500
+        },
+        "service": {
+          "name": "Outpatient Surgery",
+          "code": "29807"
+        }
+      },
+      {
+        "claim": "101112131415",
+        "type": "Pharmacy",
+        "pharmacy": {
+          "name": "Walmart Pharmacy",
+          "provider_id": 4561237890,
+          "provider_id_type": "NCPDP"
+        },
+        "date": 20210215,
+        "drug": {
+          "name": "Lisinopril",
+          "code": "3456780291",
+          "fill_number": 1,
+          "days_supply": 30
+        },
+        "prescriber": {
+          "identifier": 3345678901,
+          "name": "Jane Doe"
+        }
+      }
+    ]
+  },
+  "B4567891234": {
+    "profile": {
+      "name": "Sarah Williams",
+      "member_id": "B4567891234",
+      "address": "786 Strawberry Grove Rd, Dallas TX 23418"
+    },
+    "insurance": {
+      "name": "Apex Health",
+      "payer_id": 345678,
+      "payer_id_type": "Group Number",
+      "policy_name": "Medicare advantage Plan",
+      "policy_information": 567890,
+      "plan_name": "HMO 2000",
+      "pcp": "Dr. Malhotra",
+      "pcp_id": 45616768
+    },
+    "claims": [
+      {
+        "claim": "23456787654",
+        "type": "Medical",
+        "provider": {
+          "name": "Memorial Hospital",
+          "provider_id": 4561237890,
+          "provider_id_type": "TIN",
+          "provider_billing_address": "200 Memorial Dr, Boston, MA 02129"
+        },
+        "date": {
+          "start_date": 20201201,
+          "end_date": 20201203
+        },
+        "charges": {
+          "price_billed": 7500,
+          "negotiated_price": 6000,
+          "insurance_paid": 5000,
+          "patient_responsibility": 1000
+        },
+        "service": {
+          "name": "Appendectomy",
+          "code": "47100"
+        }
+      },
+      {
+        "claim": "98765432109",
+        "type": "Pharmacy",
+        "pharmacy": {
+          "name": "Walgreens",
+          "provider_id": 9876543210,
+          "provider_id_type": "NCPDP"
+        },
+        "date": 20201205,
+        "drug": {
+          "name": "Amoxicillin",
+          "code": "1234567899",
+          "fill_number": 2,
+          "days_supply": 14
+        },
+        "prescriber": {
+          "identifier": 2345678901,
+          "name": "Dr. Meredith Grey"
+        }
+      },
+      {
+        "claim": "932109",
+        "type": "Pharmacy",
+        "pharmacy": {
+          "name": "Walgreens",
+          "provider_id": 9876543210,
+          "provider_id_type": "NCPDP"
+        },
+        "date": 20201205,
+        "drug": {
+          "name": "Coumadin",
+          "code": "1234567899",
+          "fill_number": 3,
+          "days_supply": 30
+        },
+        "prescriber": {
+          "identifier": 2345678901,
+          "name": "Dr. Meredith Grey"
+        },
+        "status": "denied",
+        "status_reason": "No medical necessity."
+      }
+    ]
+  },
+  "D12345678": {
+    "profile": {
+      "name": "Mary Anderson",
+      "member_id": "D12345678",
+      "address": "3456 Clear Pond Lane, Dallas, TX 75231"
+    },
+    "insurance": {
+      "name": "Apex Health",
+      "payer_id": 345678,
+      "payer_id_type": "Group Number",
+      "policy_name": "PPO Plan",
+      "policy_information": 5678190,
+      "plan_name": "PPO 500 HD",
+      "pcp": "Dr. Morano",
+      "pcp_id": 45016768
+    },
+    "claims": [
+      {
+        "claimNumber": "987654321",
+        "dateOfService": "2023-01-15",
+        "provider": {
+          "name": "Memorial Hospital",
+          "provider_billing_address": "100 Main St, Austin, TX 75201",
+          "npi": "123456789"
+        },
+        "type": "Medical",
+        "charges": {
+          "billedAmount": 2500,
+          "paidAmount": 2000,
+          "patientResponsibility": 500
+        },
+        "procedureCode": "99214",
+        "diagnosisCodes": ["E11.9", "J44.9"]
+      },
+      {
+        "claimNumber": "112233445",
+        "dateOfService": "2023-01-31",
+        "pharmacy": {
+          "name": "CVS Pharmacy",
+          "npi": "987654321"
+        },
+        "type": "Pharmacy",
+        "prescription": {
+          "drugName": "Lisinopril",
+          "ndc": "12345678910",
+          "daysSupply": 30
+        }
+      }
+    ]
+  }
+}
