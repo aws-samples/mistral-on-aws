@@ -7,16 +7,14 @@ Open a PR if you would like to contribute! :twisted_rightwards_arrows:
 
 ## What's New :star:
 
-- Mistral Large 2 is now available on Bedrock!
+- Compile Deploy Benchmark Mistral Large 2 on Neuron!
   
-  Check out the blog post: [Mistral Large 2 is now on Bedrock](https://aws.amazon.com/blogs/machine-learning/mistral-large-2-is-now-available-in-amazon-bedrock/)
-  
-  Check out the notebook: [Large_2_release_highlights](notebooks/Large_2_Release_Highlights.ipynb)
+  Check out the notebook: [Mistral Large 2 on Neuron](notebooks/Mistral-Large-2-Neuron/Compile-Deploy-Benchmark-Mistral-large-2-on-Neuron.ipynb)
 
-- 7/29 Mistral release 6
-  1. [Large_2_release_highlights](notebooks/Large_2_Release_Highlights.ipynb)
-  2. [Deploy Mixtral 8x7b with NVIDIA NIM on Amazon SageMaker](notebooks/NIM-inference-samples/mixtral_8x7b_Nvidia_nim.ipynb)
-  3. [Fine-tune Mixtral 8x7B (MoE) model with QLoRA](notebooks/mixtral-8x7b-qlora-finetune.ipynb)
+- Latest Releases:
+  1. [Mistral Large 2 on Neuron](notebooks/Mistral-Large-2-Neuron/Compile-Deploy-Benchmark-Mistral-large-2-on-Neuron.ipynb)
+  2. [Apply Amazon Bedrock Guardrails to Mistral Large 2](notebooks/mistral-bedrock-guardrails.ipynb)
+  3. [Fine-tune Mixtral 8*7b with PyTorch FSDP and Q-Lora on Amazon SageMaker](notebooks/mixtral_finetune_qlora_sft/finetune-mixtral.ipynb)
 
 ## Getting Started :electric_plug:
 
