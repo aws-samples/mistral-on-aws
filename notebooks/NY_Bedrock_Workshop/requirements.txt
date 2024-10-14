@@ -1,0 +1,6 @@
+aiobotocore
+boto3
+botocore
+datasets
+tqdm
+PyPDF2
