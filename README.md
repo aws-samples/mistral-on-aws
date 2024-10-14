@@ -7,14 +7,13 @@ Open a PR if you would like to contribute! :twisted_rightwards_arrows:
 
 ## What's New :star:
 
-- Compile Deploy Benchmark Mistral Large 2 on Neuron!
+- Fine-tune Mixtral 8*7b with PyTorch FSDP and Q-Lora on Amazon SageMaker!
   
-  Check out the notebook: [Mistral Large 2 on Neuron](notebooks/Mistral-Large-2-Neuron/Compile-Deploy-Benchmark-Mistral-large-2-on-Neuron.ipynb)
+ 
 
 - Latest Releases:
-  1. [Mistral Large 2 on Neuron](notebooks/Mistral-Large-2-Neuron/Compile-Deploy-Benchmark-Mistral-large-2-on-Neuron.ipynb)
-  2. [Apply Amazon Bedrock Guardrails to Mistral Large 2](notebooks/mistral-bedrock-guardrails.ipynb)
-  3. [Fine-tune Mixtral 8*7b with PyTorch FSDP and Q-Lora on Amazon SageMaker](notebooks/mixtral_finetune_qlora_sft/finetune-mixtral.ipynb)
+  1. [Apply Amazon Bedrock Guardrails to Mistral Large 2](notebooks/mistral-bedrock-guardrails.ipynb)
+  2. [Fine-tune Mixtral 8*7b with PyTorch FSDP and Q-Lora on Amazon SageMaker](notebooks/mixtral_finetune_qlora_sft/finetune-mixtral.ipynb)
 
 ## Getting Started :electric_plug:
 
