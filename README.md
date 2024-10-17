@@ -5,7 +5,7 @@
 A collection of notebooks and samples to get started with Mistral models on AWS.
 Open a PR if you would like to contribute! :twisted_rightwards_arrows:
 
-## What's New :star:star:
+## What's New :star::star:
 
 - Fine-tune Mixtral 8*7b with PyTorch FSDP and Q-Lora on Amazon SageMaker!
 - Leveraging Long Context with Mistral Large 2!
