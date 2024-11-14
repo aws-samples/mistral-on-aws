@@ -1,5 +1,5 @@
 {
-    "sagemaker_region": "us-east-2",
+    "sagemaker_region": "us-west-2",
     "bedrock_region": "us-west-2",
     "sagemaker_endpoint_name": "huggingface-pytorch-tgi-inference-ml-in-2024-11-12-16-12-31-309",
     "bedrock_model_id": "arn:aws:bedrock:us-west-2:603555443475:imported-model/7qig1rjkxppp",
