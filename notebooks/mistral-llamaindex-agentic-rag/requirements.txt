@@ -1,0 +1,11 @@
+llama-index
+llama-index-llms-bedrock-converse
+llama-index-embeddings-bedrock
+llama-index-retrievers-bedrock
+llama-index-tools-arxiv
+llama-index-tools-duckduckgo
+llama-index-postprocessor-bedrock-rerank
+llama-index-vector-stores-opensearch
+feedparser
+opensearch-py
+requests-aws4auth
