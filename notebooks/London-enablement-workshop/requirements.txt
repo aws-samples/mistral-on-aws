@@ -1,0 +1,12 @@
+boto3
+requests
+sagemaker>=2.237.1
+PyPDF2
+llama-index
+llama-index-core
+llama-index-llms-bedrock-converse>=0.4.8
+llama-index-retrievers-bedrock
+llama-index-tools-arxiv
+feedparser
+opensearch-py
+requests-aws4auth
