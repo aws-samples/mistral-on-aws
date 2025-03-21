@@ -7,17 +7,28 @@ Open a PR if you would like to contribute! :twisted_rightwards_arrows:
 
 ## What's New :star::star:
 
-- In Depth Exploration of Pixtral Capabilities
-- Leverage Nemo 12b & Athena for Text-to-SQL
-- RAG w/ LlamaIndex
-- Fine-tune Mixtral 8*7b with PyTorch FSDP and Q-Lora on Amazon SageMaker!
- 
-- Latest Releases:
-  1. [Pixtral Capabilities & Deployment Guide](notebooks/Pixtral-samples/Pixtral_capabilities.ipynb)
-  2. [Text-to-SQL Query Generator Using Mistral Nemo 12B and Amazon SageMaker](notebooks/Text-2-SQL-Mistral-Nemo-12B-SageMaker.ipynb)
-  3. [Large 2 JSON Mode Deep Dive](notebooks/Mistral_Large_2_JSON_Mode.ipynb)
-  4. [Agentic RAG application using the Mistral Large 2 Model and LlamaIndex](notebooks/Mistral_Large2_agentic_rag_with_llamaindex.ipynb)
-  5. [Compile, Deploy, and Benchmark Mathstral on Inferentia2 with Optimum Neuron and SageMaker](notebooks/Mistral-on-AWS-Neuron/Mathstral/Compile-Deploy-Benchmark-Mathstral-on-Neuron.ipynb)
+Explore our comprehensive collection of notebooks organized by model, deployment options, and use cases!
+
+### Model Capabilities & Use Cases
+
+#### Pixtral
+- [Comprehensive Capabilities Guide](Pixtral-samples/Pixtral_capabilities.ipynb)
+- Deployment Options:
+  - [SageMaker Real-time Inference](Deployment/SageMaker/Pixtral-12b-LMI-SageMaker-realtime-inference.ipynb)
+  - [Bedrock Marketplace Integration](Deployment/Bedrock Marketplace/Deploy-Pixtral12B-from-Bedrock-Marketplace.ipynb)
+
+#### Mistral Models
+- **Small 3**: [Model Overview & Capabilities](Mistral Small 3/Mistral_small_3.ipynb)
+- **NeMo**: [Comparative Analysis & Benchmarks](Mistral NeMo/NeMo_comparative_analysis.ipynb)
+
+### Latest Highlights ✨
+- Enhanced Pixtral deployment options across AWS services
+- Comprehensive model comparison and analysis
+- Streamlined deployment guides for various AWS services
+- In-depth exploration of model capabilities and use cases
+
+> 💡 **Note**: All notebooks include detailed explanations, code samples, and best practices for implementation.
+
 
 ## Getting Started :electric_plug:
 
