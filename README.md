@@ -15,11 +15,11 @@ Explore our comprehensive collection of notebooks organized by model, deployment
 - [Comprehensive Capabilities Guide](Pixtral-samples/Pixtral_capabilities.ipynb)
 - Deployment Options:
   - [SageMaker Real-time Inference](Deployment/SageMaker/Pixtral-12b-LMI-SageMaker-realtime-inference.ipynb)
-  - [Bedrock Marketplace Integration](Deployment/Bedrock Marketplace/Deploy-Pixtral12B-from-Bedrock-Marketplace.ipynb)
+  - [Bedrock Marketplace Integration](Deployment/Bedrock%20Marketplace/Deploy-Pixtral12B-from-Bedrock-Marketplace.ipynb)
 
 #### Mistral Models
-- **Small 3**: [Model Overview & Capabilities](Mistral Small 3/Mistral_small_3.ipynb)
-- **NeMo**: [Comparative Analysis & Benchmarks](Mistral NeMo/NeMo_comparative_analysis.ipynb)
+- **Small 3**: [Model Overview & Capabilities](Mistral%20Small%203/Mistral_small_3.ipynb)
+- **NeMo**: [Comparative Analysis & Benchmarks](Mistral%20NeMo/NeMo_comparative_analysis.ipynb)
 
 ### Latest Highlights ✨
 - Enhanced Pixtral deployment options across AWS services
@@ -28,6 +28,7 @@ Explore our comprehensive collection of notebooks organized by model, deployment
 - In-depth exploration of model capabilities and use cases
 
 > 💡 **Note**: All notebooks include detailed explanations, code samples, and best practices for implementation.
+
 
 
 ## Getting Started :electric_plug:
