@@ -1,0 +1,14 @@
+[project]
+name = "aws-summit-paris-2025-agentic"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "boto3>=1.37.25",
+    "mistralai>=1.6.0",
+    "notebook>=7.3.3",
+    "numpy>=2.2.4",
+    "pydantic>=2.11.1",
+    "python-dotenv>=1.1.0",
+]
