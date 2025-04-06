@@ -9,19 +9,19 @@ from utils import haversine_distance, to_minutes
 GOOGLE_WEATHER_API_ENDPOINT = (
     "https://weather.googleapis.com/v1/currentConditions:lookup"
 )
-GOOGLE_ROUTES_API_ENDPOINT = "https://routes.googleapis.com/directions/v2:computeRoutes"
 GOOGLE_MAPS_GEOCODE_API_ENDPOINT = "https://maps.googleapis.com/maps/api/geocode/json"
-CREDENTIAL_VARIABLES = [
+GOOGLE_ROUTES_API_ENDPOINT = "https://routes.googleapis.com/directions/v2:computeRoutes"
+VELIB_STATIONS_FILE_PATH = "./assets/velib_stations.json"
+VELIB_SERVICE_URL = "https://velib-metropole-opendata.smovengo.cloud/opendata/Velib_Metropole/station_status.json"
+
+CREDENTIALS_VARIABLES = [
     "GOOGLE_WEATHER_API_KEY",
     "GOOGLE_MAPS_GEOCODE_API_KEY",
     "GOOGLE_ROUTES_API_KEY",
 ]
-VELIB_STATIONS_FILE_PATH = "./assets/velib_stations.json"
-VELIB_SERVICE_URL = "https://velib-metropole-opendata.smovengo.cloud/opendata/Velib_Metropole/station_status.json"
-
 
 load_dotenv()
-for var in CREDENTIAL_VARIABLES:
+for var in CREDENTIALS_VARIABLES:
     if not os.environ.get(var, None):
         raise ValueError(f"Missing env variable for credentials: {var}")
 
