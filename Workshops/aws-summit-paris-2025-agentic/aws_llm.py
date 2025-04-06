@@ -1,5 +1,6 @@
 import boto3
 import json
+import os
 from pathlib import Path
 from typing import List, Dict, Any, Optional, Self
 from tools_utils import tool_map
@@ -15,6 +16,7 @@ AWS_BEDROCK_DEFAULT_SYSTEM_MESSAGE = """
 Tu es un assistant serviable et informel. Ton role est de guider l'utilisateur
 dans sa découverte de la ville de Paris. Réponds toujours aux questions en Français.
 """
+
 
 client = boto3.client(service_name="bedrock-runtime", region_name=AWS_REGION)
 
@@ -85,16 +87,6 @@ class Agent:
                 except Exception as e:
                     print(f"Error during tool use: {e}")
             print(self.messages[-1]["content"][0]["text"])
-
         except Exception as e:
             print(f"Conversation error: {e}")
             raise
-
-
-# foo = Agent()
-# foo.tools = tools_demo
-# foo.ask("Est-ce que le temps qu'il fait à Paris en ce moment est propice au vélo ?")
-# foo.ask("Quelle est la station Velib la plus proche du Palais des Congrès de Paris ?")
-# foo.ask("Reste-t-il encore des vélos disponibles à cette station?")
-# foo.ask("Peux-tu me donner l'itinéraire pour aller de cette station à la Gare de Lyon?")
-# foo.show_messages()
