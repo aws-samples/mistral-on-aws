@@ -13,8 +13,11 @@ This application can be further expanded to accommodate broader use cases requir
 ## Prerequisites 🔥
 
 - At the time of writing this notebook, the Mistral Large 2 model is only available in the `us-west-2` region.
-- Create a SageMaker notebook instance in the `us-west-2` region and select `ml.t3.medium` as the instance type.
-- Create a new SageMaker execution role and grant it Bedrock full access. Create an inline policy for this execution role and add below JSON configuration to the policy:
+- Create an Amazon SageMaker domain. 
+- Create a SageMaker domain user profile.
+- Launch Amazon SageMaker Studio, select JupyterLab, and create a space. 
+- Select the instance `ml.t3.medium` and the image `SageMaker Distribution 2.3.1`, then run the space. 
+- On the IAM console, create an inline policy for the SageMaker Notebook execution role and add the following JSON configuration to the policy:
 ```json
 {
     "Version": "2012-10-17",
@@ -22,8 +25,28 @@ This application can be further expanded to accommodate broader use cases requir
         {
             "Effect": "Allow",
             "Action": [
+                "bedrock:Rerank",
+                "bedrock:Retrieve",
+                "bedrock:InvokeModel",
+                "bedrock:InvokeModelWithResponseStream",
+                "bedrock:ListFoundationModels"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
                 "iam:CreatePolicy",
-                "iam:AttachRolePolicy",
+                "iam:AttachRolePolicy"
+            ],
+            "Resource": [
+                "arn:aws:iam::<account_number>:role/*",
+                "arn:aws:iam::<account_number>:policy/*"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
                 "aoss:*"
             ],
             "Resource": "*"
