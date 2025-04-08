@@ -1,0 +1,12 @@
+[project]
+name = "aws-summit-paris-2025-agentic"
+version = "1.0.0"
+description = "Demo for the AWS Paris Summit 2025"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "boto3>=1.37.25",
+    "notebook>=7.3.3",
+    "numpy>=2.2.4",
+    "python-dotenv>=1.1.0",
+]
