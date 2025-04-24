@@ -1,0 +1,89 @@
+{
+    "tools": [
+        {
+            "toolSpec": {
+                "name": "get_weather",
+                "description": "Fetches the weather at a specific location",
+                "inputSchema": {
+                    "json": {
+                        "type": "object",
+                        "properties": {
+                            "address": {
+                                "type": "string",
+                                "description": "The location to get the weather from"
+                            }
+                        },
+                        "required": [
+                            "address"
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "toolSpec": {
+                "name": "get_nearest_velib_station",
+                "description": "Retrieves the closest Velib bike rental station",
+                "inputSchema": {
+                    "json": {
+                        "type": "object",
+                        "properties": {
+                            "address": {
+                                "type": "string",
+                                "description": "The location to search the nearest Velib bike rental station from"
+                            }
+                        },
+                        "required": [
+                            "address"
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "toolSpec": {
+                "name": "get_remaining_bikes",
+                "description": "Get the number of remaining bikes at a given Velib bike rental station",
+                "inputSchema": {
+                    "json": {
+                        "type": "object",
+                        "properties": {
+                            "station_id": {
+                                "type": "string",
+                                "description": "The ID of the Velib bike rental station to get remaining bikes from"
+                            }
+                        },
+                        "required": [
+                            "station_id"
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "toolSpec": {
+                "name": "get_biking_itinerary",
+                "description": "Create a biking itinerary description",
+                "inputSchema": {
+                    "json": {
+                        "type": "object",
+                        "properties": {
+                            "origin_address": {
+                                "type": "string",
+                                "description": "The starting location of the biking itinerary"
+                            },
+                            "destination_address": {
+                                "type": "string",
+                                "description": "The end point of the biking itinerary"
+                            }
+                        },
+                        "required": [
+                            "origin_address",
+                            "destination_address"
+                        ]
+                    }
+                }
+            }
+        }
+    ]
+}
