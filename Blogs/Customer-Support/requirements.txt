@@ -1,0 +1,12 @@
+boto3
+botocore
+langchain
+langchain-community
+langgraph
+langgraph-prebuilt
+atlassian-python-api
+langchain-aws
+jira
+requests
+python-dotenv
+IPython
