@@ -19,6 +19,7 @@ from src.agent import BedrockConverseAgent
 from src.utility import UtilityHelper
 from src.mcpclient import MCPClient
 from src.server_configs import SERVER_CONFIGS
+from src.config import AWS_CONFIG
 
 # Apply nest_asyncio to allow asyncio within Gradio
 nest_asyncio.apply()
@@ -40,11 +41,12 @@ tool_usage_history = []
 # Initialize the agent and tool manager
 async def initialize_agent():
     """Initialize Bedrock agent and connect to MCP tools"""
-    # Initialize model configuration
-    model_id = "us.mistral.mistral-large-2407-v1:0"
+    # Initialize model configuration from config.py
+    model_id = AWS_CONFIG["model_id"]
+    region = AWS_CONFIG["region"]
     
     # Set up the agent and tool manager
-    agent = BedrockConverseAgent(model_id)
+    agent = BedrockConverseAgent(model_id, region)
     utility_manager = UtilityHelper()
     agent.tools = utility_manager
 
@@ -258,6 +260,19 @@ with gr.Blocks(css="""
                 tool_usage = gr.HTML(get_tool_usage_html)
             with gr.Tab("Available Tools"):
                 tools_list = gr.HTML(list_tools)
+            with gr.Tab("Configuration"):
+                gr.Markdown("### AWS Bedrock Configuration")
+                region_input = gr.Textbox(
+                    label="AWS Region",
+                    value=AWS_CONFIG["region"],
+                    placeholder="e.g., us-east-1, eu-central-1"
+                )
+                model_id_input = gr.Textbox(
+                    label="Model ID",
+                    value=AWS_CONFIG["model_id"],
+                    placeholder="e.g., us.anthropic.claude-3-sonnet-20240229-v1:0"
+                )
+                update_config_btn = gr.Button("Update Configuration")
     
     # Set up the chat functionality
     def respond(message, chat_history):
@@ -320,6 +335,32 @@ with gr.Blocks(css="""
         if agent:
             agent.messages = []
         return None
+    
+    # Function to update AWS configuration
+    def update_config(region, model_id):
+        global agent, AWS_CONFIG
+        # Update the configuration
+        AWS_CONFIG["region"] = region
+        AWS_CONFIG["model_id"] = model_id
+        
+        # Reset the agent so it will be reinitialized with new settings
+        agent = None
+        
+        # Write the updated configuration to the file
+        try:
+            with open('/Users/hoying/Documents/2025/MCP/blog_code/src/config.py', 'w') as f:
+                f.write('"""\nConfiguration module for the MCP application.\n\n')
+                f.write('This module stores configuration parameters for the application, such as\n')
+                f.write('AWS region and model ID for Amazon Bedrock service.\n"""\n\n')
+                f.write('# AWS Bedrock configuration\n')
+                f.write('AWS_CONFIG = {\n')
+                f.write(f'    "region": "{region}",  # AWS region\n')
+                f.write(f'    "model_id": "{model_id}"  # Model ID\n')
+                f.write('}')
+            
+            return f"Configuration updated successfully. Region: {region}, Model ID: {model_id}"
+        except Exception as e:
+            return f"Error updating configuration: {str(e)}"
         
     reset_btn.click(
         fn=lambda: ([], "Conversation has been reset."), 
@@ -329,6 +370,13 @@ with gr.Blocks(css="""
         fn=reset_agent_messages, 
         inputs=None, 
         outputs=None
+    )
+    
+    # Handle configuration update button
+    update_config_btn.click(
+        fn=update_config,
+        inputs=[region_input, model_id_input],
+        outputs=gr.Textbox(label="Status")
     )
 
 if __name__ == "__main__":
