@@ -12,6 +12,7 @@ from utility import UtilityHelper
 from mcpclient import MCPClient
 from datetime import datetime
 from server_configs import SERVER_CONFIGS
+from config import AWS_CONFIG
 
 # ANSI color codes for beautiful output in terminal
 class Colors:
@@ -89,13 +90,13 @@ async def main():
     Returns:
         None
     """
-    # Initialize model configuration
-    model_id = "mistral.mistral-large-2407-v1:0"
+    # Initialize model configuration from config.py
+    model_id = AWS_CONFIG["model_id"]
+    region = AWS_CONFIG["region"]
     
     # Set up the agent and tool manager
-    agent = BedrockConverseAgent(model_id)
-    utility_manager = UtilityHelper()
-    agent.tools = utility_manager
+    agent = BedrockConverseAgent(model_id, region)
+    agent.tools = UtilityHelper()
 
     # Define the agent's behavior through system prompt
     agent.system_prompt = """
@@ -156,11 +157,7 @@ async def main():
             
             # By default, use the standard response
             display_response = response
-            
-            # If there are accumulated tool results, we can access them through the last_response_with_tools property
-            # Use the combined response with all tool results
-            if hasattr(agent, 'last_response_with_tools'):
-                display_response = agent.last_response_with_tools
+
             
             print(f"\n{format_message('assistant', display_response)}")
     except KeyboardInterrupt:
