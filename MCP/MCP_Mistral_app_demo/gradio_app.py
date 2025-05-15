@@ -275,8 +275,9 @@ with gr.Blocks(css="""
                 update_config_btn = gr.Button("Update Configuration")
     
     # Set up the chat functionality
-    def respond(message, chat_history):
+    async def respond(message, chat_history):
         """Process the message and update the chat history"""
+        global agent, mcp_clients, available_tools
         if not message.strip():
             return chat_history
             
@@ -285,12 +286,10 @@ with gr.Blocks(css="""
         
         # Initialize agent if needed
         if agent is None:
-            loop = asyncio.get_event_loop()
-            _, _, _ = loop.run_until_complete(initialize_agent())
+            agent, mcp_clients, available_tools = await initialize_agent()
         
         # Process user message
-        loop = asyncio.get_event_loop()
-        bot_response = loop.run_until_complete(process_message(message, chat_history))
+        bot_response = await process_message(message, chat_history)
         
         # Add assistant message to history
         chat_history.append({"role": "assistant", "content": bot_response})
