@@ -102,10 +102,9 @@ def format_timestamp():
     return datetime.now().strftime("%H:%M:%S")
 
 # Process the incoming message
-async def process_message(message, history):
+async def process_message(message,image):
     """Process a message from the user and get a response from the agent"""
     global agent
-    
     if agent is None:
         # First-time initialization
         global mcp_clients, available_tools
@@ -114,7 +113,7 @@ async def process_message(message, history):
     try:
         # Process message and get response
         # logger.info(f"Processing user message: {message[:50]}...")
-        response = await agent.invoke_with_prompt(message)
+        response = await agent.invoke_with_prompt(message,image)
         # logger.info(f"Generated response of length: {len(response)}")
         
         # Update the tool usage HTML
@@ -245,13 +244,21 @@ with gr.Blocks(css="""
             )
             
             with gr.Row():
-                msg = gr.Textbox(
-                    placeholder="Type your message here...",
-                    show_label=False,
-                    container=False,
-                    scale=8
-                )
+                with gr.Column(scale=6):
+                    msg = gr.Textbox(
+                        placeholder="Type your message here...",
+                        show_label=False,
+                        container=False
+                    )
+                with gr.Column(scale=3):
+                    img_input = gr.Image(
+                        type="pil",
+                        label="Drop Image Here",
+                        sources=["upload", "clipboard"],
+                        # tool="editor"
+                    )
                 submit = gr.Button("Send", scale=1)
+
             
             reset_btn = gr.Button("Reset Conversation")
             
@@ -275,11 +282,14 @@ with gr.Blocks(css="""
                 update_config_btn = gr.Button("Update Configuration")
     
     # Set up the chat functionality
-    async def respond(message, chat_history):
+    async def respond(message, chat_history, image=None):
         """Process the message and update the chat history"""
         global agent, mcp_clients, available_tools
         if not message.strip():
             return chat_history
+        
+        if image is not None:
+            logger.debug("Image uploaded")
             
         # Add user message to history
         chat_history.append({"role": "user", "content": message})
@@ -289,7 +299,7 @@ with gr.Blocks(css="""
             agent, mcp_clients, available_tools = await initialize_agent()
         
         # Process user message
-        bot_response = await process_message(message, chat_history)
+        bot_response = await process_message(message,image)
         
         # Add assistant message to history
         chat_history.append({"role": "assistant", "content": bot_response})
@@ -300,7 +310,7 @@ with gr.Blocks(css="""
     # Handle message submission
     msg.submit(
         fn=respond, 
-        inputs=[msg, chatbot], 
+        inputs=[msg, chatbot,img_input], 
         outputs=[chatbot]
     ).then(
         fn=lambda: "", 
@@ -315,12 +325,16 @@ with gr.Blocks(css="""
     # Also handle the send button click
     submit.click(
         fn=respond, 
-        inputs=[msg, chatbot], 
+        inputs=[msg, chatbot,img_input], 
         outputs=[chatbot]
     ).then(
         fn=lambda: "", 
         inputs=None, 
         outputs=msg
+    ).then(
+        fn=lambda: None,  # Return None to clear the image
+        inputs=None,
+        outputs=img_input
     ).then(
         fn=get_tool_usage_html,
         inputs=None,

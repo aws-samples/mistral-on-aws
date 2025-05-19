@@ -6,6 +6,7 @@ import asyncio
 import re
 import base64
 import os
+import io
 import requests
 import mimetypes
 from PIL import Image
@@ -176,96 +177,86 @@ class BedrockConverseAgent:
             return True, match.group(0)
         return False, None
 
-    async def invoke_with_prompt(self, prompt):
+    async def invoke_with_prompt(self, prompt, image_input=None):
         """
         Process a text prompt and get a response from the model.
-        Automatically detects and processes image URLs in the prompt.
+        Automatically detects and processes image URLs in the prompt,
+        or handles direct image input.
         
         Args:
             prompt (str): User's text prompt, may contain image URLs
+            image_input (PIL.Image.Image, optional): Direct image input
             
         Returns:
             str: Model's response text
         """
-        # Check if the prompt contains an image URL
-        has_image, image_url = self._is_image_url(prompt)
+        content = []
+        text_prompt = prompt
+        image_data = None
         
-        if has_image:
+        # First check for direct image upload
+        if image_input:
+            if isinstance(image_input, Image.Image):
+                print("Processing uploaded image")
+                
+                # Check image dimensions - resize if extremely large
+                MAX_SIZE = 4096  # Maximum dimension
+                if image_input.width > MAX_SIZE or image_input.height > MAX_SIZE:
+                    print(f"Image is too large ({image_input.width}x{image_input.height}), resizing...")
+                    # Calculate new dimensions keeping aspect ratio
+                    ratio = min(MAX_SIZE / image_input.width, MAX_SIZE / image_input.height)
+                    new_width = int(image_input.width * ratio)
+                    new_height = int(image_input.height * ratio)
+                    image_input = image_input.resize((new_width, new_height), Image.Resampling.LANCZOS)
+                
+                # Convert to bytes
+                output = io.BytesIO()
+                
+                # Handle RGBA images by converting to RGB with white background
+                if image_input.mode == 'RGBA':
+                    background = Image.new('RGB', image_input.size, (255, 255, 255))
+                    background.paste(image_input, (0, 0), image_input)
+                    image_input = background
+                
+                # Save as JPEG (most compatible format)
+                image_input.convert('RGB').save(output, format='JPEG', quality=85)
+                image_bytes = output.getvalue()
+                
+                # Create image data structure similar to URL flow
+                image_data = {
+                    "bytes": image_bytes,
+                    "mime_type": "image/jpeg"
+                }
+                
+        
+        # Then check for image URL in prompt (this may override direct image if both are provided)
+        has_image_url, image_url = self._is_image_url(prompt)
+        
+        if has_image_url:
             try:
-                # Extract the image URL and remove it from the prompt
-                # Get text before and after the URL
+                print("Image URL found")
+                # Extract the image URL and clean the text prompt
                 parts = prompt.split(image_url, 1)
                 text_before = parts[0].strip()
                 text_after = parts[1].strip() if len(parts) > 1 else ""
                 
                 # Clean up any fragments from the URL that might remain
-                # Look for common URL query param fragments
                 text_after = re.sub(r'^\?[a-z0-9=&]+', '', text_after)
-                
-                # Remove starting URL fragments that might have been split incorrectly
                 text_before = re.sub(r'https?:\/\/[^\s]*$', '', text_before).strip()
                 
-                # Combine text parts, removing the URL itself
+                # Update the text prompt
                 text_prompt = f"{text_before} {text_after}".strip()
                 
-                # Check if text appears to be asking about the image
-                if not text_prompt:
-                    text_prompt = "What's in this image?"
-                elif not any(term in text_prompt.lower() for term in ['image', 'picture', 'photo', 'describe']):
-                    text_prompt = f"About this image: {text_prompt}"
-                
                 print(f"Processing image URL: {image_url}")
-                # Get image data
+                # Get image data from URL
                 image_data = await self._fetch_image_from_url(image_url)
                 
-                # Create multimodal content
-                content = []
-                
-                # Add text if any
-                if text_prompt:
-                    content.append({'text': text_prompt})
-                    print(f"Adding text prompt: {text_prompt}")
-                
-                # Add image
-                print("Adding image to request")
-                
-                # Get format from the processed image
-                mime_type = image_data['mime_type'].lower()
-                image_format = 'jpeg'  # Default to jpeg
-                
-                # Determine format from MIME type
-                if 'png' in mime_type:
-                    image_format = 'png'
-                elif 'gif' in mime_type:
-                    image_format = 'gif'
-                elif 'webp' in mime_type:
-                    image_format = 'webp'
-                
-                # Print image info
-                print(f"Using image format: {image_format}")
-                
-                # Add validation check for image size
-                image_size = len(image_data['bytes'])
-                if image_size > 3750000:  # 3.75MB limit
-                    print(f"Warning: Image is very large ({image_size/1000000:.1f}MB), may exceed API limits")
-                
-                content.append({
-                    'image': {
-                        'format': image_format,
-                        'source': {
-                            'bytes': image_data['bytes']
-                        }
-                    }
-                })
-                
-                print("Sending multimodal request to model")
-                return await self.invoke(content)
             except Exception as e:
-                # If image processing fails, fall back to text-only with a warning
+                # If image URL processing fails, fall back to text-only with a warning
                 error_msg = f"Warning: Failed to process image URL: {str(e)}"
                 print(error_msg)
                 
-                # Add detailed error information based on exception type
+                # Add detailed error information
                 if isinstance(e, requests.exceptions.RequestException):
                     print(f"Network error: Could not download image from URL {image_url}")
                 elif isinstance(e, ValueError) and "Invalid URL" in str(e):
@@ -273,14 +264,60 @@ class BedrockConverseAgent:
                 elif isinstance(e, Exception) and "Parameter validation failed" in str(e):
                     print("API parameter validation error - check model compatibility with multimodal inputs")
                 
-                # Fall back to text-only
-                print("Falling back to text-only prompt")
-                content = [{'text': prompt}]
-                return await self.invoke(content)
+                # If we have a direct image upload as backup, we'll still use that below
+                # Otherwise, we'll fall back to text-only
+        
+        # Create multimodal content structure
+        if image_data:
+            # Check if text appears to be asking about the image
+            if not text_prompt:
+                text_prompt = "What's in this image?"
+            elif not any(term in text_prompt.lower() for term in ['image', 'picture', 'photo', 'describe']):
+                text_prompt = f"About this image: {text_prompt}"
+            
+            # Add text if any
+            if text_prompt:
+                content.append({'text': text_prompt})
+                print(f"Adding text prompt: {text_prompt}")
+            
+            
+            # Get format from the processed image
+            mime_type = image_data['mime_type'].lower()
+            image_format = 'jpeg'  # Default to jpeg
+            
+            # Determine format from MIME type
+            if 'png' in mime_type:
+                image_format = 'png'
+            elif 'gif' in mime_type:
+                image_format = 'gif'
+            elif 'webp' in mime_type:
+                image_format = 'webp'
+            
+            # Print image info
+            print(f"Using image format: {image_format}")
+            
+            # Add validation check for image size
+            image_size = len(image_data['bytes'])
+            if image_size > 3750000:  # 3.75MB limit
+                print(f"Warning: Image is very large ({image_size/1000000:.1f}MB), may exceed API limits")
+            
+            content.append({
+                'image': {
+                    'format': image_format,
+                    'source': {
+                        'bytes': image_data['bytes']
+                    }
+                }
+            })
+            
+            print("Sending multimodal request to model")
         else:
             # Standard text-only prompt
-            content = [{'text': prompt}]
-            return await self.invoke(content)
+            content = [{'text': text_prompt}]
+            print("Sending text-only request to model")
+        
+        # Send the prepared content to the model
+        return await self.invoke(content)
 
     async def invoke(self, content):
         """
