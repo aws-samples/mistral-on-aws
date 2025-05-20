@@ -26,7 +26,7 @@ nest_asyncio.apply()
 
 # Set up logging
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
         logging.StreamHandler(sys.stdout)
@@ -90,7 +90,9 @@ async def initialize_agent():
     agent.tools.register_tool_usage_callback(record_tool_usage)
     
     # Return the initialized agent and clients
-    return agent, mcp_clients, [tool['toolSpec'] for tool in agent.tools.get_tools()['tools']]
+    tool_specs = [tool['toolSpec'] for tool in agent.tools.get_tools()['tools']]
+    logger.info(f"Found {len(tool_specs)} tools")
+    return agent, mcp_clients, tool_specs
 
 # Initialize the agent and client globally
 agent = None
@@ -102,9 +104,10 @@ def format_timestamp():
     return datetime.now().strftime("%H:%M:%S")
 
 # Process the incoming message
-async def process_message(message,image):
+async def process_message(message, image):
     """Process a message from the user and get a response from the agent"""
     global agent
+    
     if agent is None:
         # First-time initialization
         global mcp_clients, available_tools
@@ -112,9 +115,7 @@ async def process_message(message,image):
         
     try:
         # Process message and get response
-        # logger.info(f"Processing user message: {message[:50]}...")
-        response = await agent.invoke_with_prompt(message,image)
-        # logger.info(f"Generated response of length: {len(response)}")
+        response = await agent.invoke_with_prompt(message, image)
         
         # Update the tool usage HTML
         get_tool_usage_html()
@@ -187,15 +188,25 @@ def list_tools():
         return "No tools available yet."
     
     html = "<h3>Available Tools</h3>"
-    for tool in available_tools:
-        name = tool['name']
-        description = tool['description']
-        html += f"""
-        <div style="border: 1px solid #ddd; margin-bottom: 10px; padding: 10px; border-radius: 5px;">
-            <div style="font-weight: bold; color: #2C3E50;">{name}</div>
-            <div style="margin-top: 5px;">{description}</div>
-        </div>
-        """
+    for tool_spec in available_tools:
+        try:
+            name = tool_spec.get('name', 'Unknown Tool')
+            description = tool_spec.get('description', 'No description available')
+            
+            html += f"""
+            <div style="border: 1px solid #ddd; margin-bottom: 10px; padding: 10px; border-radius: 5px;">
+                <div style="font-weight: bold; color: #2C3E50;">{name}</div>
+                <div style="margin-top: 5px;">{description}</div>
+            </div>
+            """
+        except Exception as e:
+            logger.error(f"Error displaying tool: {str(e)}")
+            html += f"""
+            <div style="border: 1px solid #ddd; margin-bottom: 10px; padding: 10px; border-radius: 5px; color: red;">
+                <div>Error displaying tool: {str(e)}</div>
+            </div>
+            """
+    
     return html
 
 # Reset conversation history
@@ -228,7 +239,7 @@ with gr.Blocks(css="""
     with gr.Row():
         gr.HTML("""
             <div style="text-align: center; margin-bottom: 1rem">
-                <h1>MCP Application Demo</h1>
+                <h1>MCP Application Demo with Mistral models in Amazon Bedrock</h1>
                 <p>Ask questions and get help with tasks using MCP servers</p>
             </div>
         """)
@@ -254,11 +265,9 @@ with gr.Blocks(css="""
                     img_input = gr.Image(
                         type="pil",
                         label="Drop Image Here",
-                        sources=["upload", "clipboard"],
-                        # tool="editor"
+                        sources=["upload", "clipboard"]
                     )
                 submit = gr.Button("Send", scale=1)
-
             
             reset_btn = gr.Button("Reset Conversation")
             
@@ -266,7 +275,9 @@ with gr.Blocks(css="""
             with gr.Tab("Tool Usage"):
                 tool_usage = gr.HTML(get_tool_usage_html)
             with gr.Tab("Available Tools"):
-                tools_list = gr.HTML(list_tools)
+                with gr.Column():
+                    tools_list = gr.HTML(list_tools)
+                    refresh_tools_btn = gr.Button("Refresh Tools List")
             with gr.Tab("Configuration"):
                 gr.Markdown("### AWS Bedrock Configuration")
                 region_input = gr.Textbox(
@@ -288,8 +299,7 @@ with gr.Blocks(css="""
         if not message.strip():
             return chat_history
         
-        if image is not None:
-            logger.debug("Image uploaded")
+        # Process image if provided
             
         # Add user message to history
         chat_history.append({"role": "user", "content": message})
@@ -297,9 +307,11 @@ with gr.Blocks(css="""
         # Initialize agent if needed
         if agent is None:
             agent, mcp_clients, available_tools = await initialize_agent()
+            # Update tools list in the UI
+            refresh_tools_list()
         
         # Process user message
-        bot_response = await process_message(message,image)
+        bot_response = await process_message(message, image)
         
         # Add assistant message to history
         chat_history.append({"role": "assistant", "content": bot_response})
@@ -310,7 +322,7 @@ with gr.Blocks(css="""
     # Handle message submission
     msg.submit(
         fn=respond, 
-        inputs=[msg, chatbot,img_input], 
+        inputs=[msg, chatbot, img_input], 
         outputs=[chatbot]
     ).then(
         fn=lambda: "", 
@@ -320,12 +332,16 @@ with gr.Blocks(css="""
         fn=get_tool_usage_html,
         inputs=None,
         outputs=tool_usage
+    ).then(
+        fn=list_tools,
+        inputs=None,
+        outputs=tools_list
     )
     
     # Also handle the send button click
     submit.click(
         fn=respond, 
-        inputs=[msg, chatbot,img_input], 
+        inputs=[msg, chatbot, img_input], 
         outputs=[chatbot]
     ).then(
         fn=lambda: "", 
@@ -339,6 +355,10 @@ with gr.Blocks(css="""
         fn=get_tool_usage_html,
         inputs=None,
         outputs=tool_usage
+    ).then(
+        fn=list_tools,
+        inputs=None,
+        outputs=tools_list
     )
     
     # Handle reset button
@@ -348,6 +368,14 @@ with gr.Blocks(css="""
         if agent:
             agent.messages = []
         return None
+    
+    # Function to refresh the tools list
+    def refresh_tools_list():
+        global agent, available_tools
+        if agent and agent.tools:
+            tool_specs = [tool['toolSpec'] for tool in agent.tools.get_tools()['tools']]
+            available_tools = tool_specs
+        return list_tools()
     
     # Function to update AWS configuration
     def update_config(region, model_id):
@@ -361,7 +389,9 @@ with gr.Blocks(css="""
         
         # Write the updated configuration to the file
         try:
-            with open('/Users/hoying/Documents/2025/MCP/blog_code/src/config.py', 'w') as f:
+            import os
+            config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'src', 'config.py')
+            with open(config_path, 'w') as f:
                 f.write('"""\nConfiguration module for the MCP application.\n\n')
                 f.write('This module stores configuration parameters for the application, such as\n')
                 f.write('AWS region and model ID for Amazon Bedrock service.\n"""\n\n')
@@ -390,6 +420,13 @@ with gr.Blocks(css="""
         fn=update_config,
         inputs=[region_input, model_id_input],
         outputs=gr.Textbox(label="Status")
+    )
+    
+    # Handle tool refresh button
+    refresh_tools_btn.click(
+        fn=refresh_tools_list,
+        inputs=None,
+        outputs=tools_list
     )
 
 if __name__ == "__main__":
