@@ -94,7 +94,6 @@ class BedrockConverseAgent:
                 # Check image dimensions - resize if extremely large
                 MAX_SIZE = 4096  # Maximum dimension
                 if img.width > MAX_SIZE or img.height > MAX_SIZE:
-                    print(f"Image is too large ({img.width}x{img.height}), resizing...")
                     # Calculate new dimensions keeping aspect ratio
                     ratio = min(MAX_SIZE / img.width, MAX_SIZE / img.height)
                     new_width = int(img.width * ratio)
@@ -110,7 +109,6 @@ class BedrockConverseAgent:
                 # Check if the detected format is supported
                 format_supported = any(fmt == detected_format for fmt in valid_formats)
                 if not format_supported or detected_format not in ['jpeg', 'jpg', 'png', 'gif', 'webp']:
-                    print(f"Converting image to JPEG format for compatibility")
                     # Convert to JPEG (most widely supported format)
                     output = BytesIO()
                     
@@ -140,10 +138,7 @@ class BedrockConverseAgent:
                         img.save(output, format='WEBP')
                     image_data = output.getvalue()
                 
-                print(f"Successfully processed image: {img.width}x{img.height} in {detected_format} format")
-                
             except Exception as img_err:
-                print(f"Failed to process image: {str(img_err)}")
                 # Fall back to original image data
                 image_data = response.content
             
@@ -197,12 +192,9 @@ class BedrockConverseAgent:
         # First check for direct image upload
         if image_input:
             if isinstance(image_input, Image.Image):
-                print("Processing uploaded image")
-                
                 # Check image dimensions - resize if extremely large
                 MAX_SIZE = 4096  # Maximum dimension
                 if image_input.width > MAX_SIZE or image_input.height > MAX_SIZE:
-                    print(f"Image is too large ({image_input.width}x{image_input.height}), resizing...")
                     # Calculate new dimensions keeping aspect ratio
                     ratio = min(MAX_SIZE / image_input.width, MAX_SIZE / image_input.height)
                     new_width = int(image_input.width * ratio)
@@ -234,7 +226,6 @@ class BedrockConverseAgent:
         
         if has_image_url:
             try:
-                print("Image URL found")
                 # Extract the image URL and clean the text prompt
                 parts = prompt.split(image_url, 1)
                 text_before = parts[0].strip()
@@ -247,22 +238,14 @@ class BedrockConverseAgent:
                 # Update the text prompt
                 text_prompt = f"{text_before} {text_after}".strip()
                 
-                print(f"Processing image URL: {image_url}")
                 # Get image data from URL
                 image_data = await self._fetch_image_from_url(image_url)
                 
             except Exception as e:
-                # If image URL processing fails, fall back to text-only with a warning
-                error_msg = f"Warning: Failed to process image URL: {str(e)}"
-                print(error_msg)
-                
-                # Add detailed error information
-                if isinstance(e, requests.exceptions.RequestException):
-                    print(f"Network error: Could not download image from URL {image_url}")
-                elif isinstance(e, ValueError) and "Invalid URL" in str(e):
-                    print(f"Invalid URL format: {image_url}")
-                elif isinstance(e, Exception) and "Parameter validation failed" in str(e):
-                    print("API parameter validation error - check model compatibility with multimodal inputs")
+                # If image URL processing fails, fall back to text-only
+                if isinstance(e, requests.exceptions.RequestException) or isinstance(e, ValueError):
+                    # Log the error but continue with existing image data if available
+                    pass
                 
                 # If we have a direct image upload as backup, we'll still use that below
                 # Otherwise, we'll fall back to text-only
@@ -278,8 +261,6 @@ class BedrockConverseAgent:
             # Add text if any
             if text_prompt:
                 content.append({'text': text_prompt})
-                print(f"Adding text prompt: {text_prompt}")
-            
             
             # Get format from the processed image
             mime_type = image_data['mime_type'].lower()
@@ -293,13 +274,8 @@ class BedrockConverseAgent:
             elif 'webp' in mime_type:
                 image_format = 'webp'
             
-            # Print image info
-            print(f"Using image format: {image_format}")
-            
             # Add validation check for image size
             image_size = len(image_data['bytes'])
-            if image_size > 3750000:  # 3.75MB limit
-                print(f"Warning: Image is very large ({image_size/1000000:.1f}MB), may exceed API limits")
             
             content.append({
                 'image': {
@@ -309,12 +285,9 @@ class BedrockConverseAgent:
                     }
                 }
             })
-            
-            print("Sending multimodal request to model")
         else:
             # Standard text-only prompt
             content = [{'text': text_prompt}]
-            print("Sending text-only request to model")
         
         # Send the prepared content to the model
         return await self.invoke(content)
@@ -364,6 +337,7 @@ class BedrockConverseAgent:
                 },
                 toolConfig=self.tools.get_tools()
             )
+
             return response
         except ClientError as e:
             error_code = e.response.get('Error', {}).get('Code', 'Unknown')
@@ -447,7 +421,11 @@ class BedrockConverseAgent:
                         
                         tool_result = await self.tools.execute_tool(tool_request)
                         tool_response.append({'toolResult': tool_result})
-                
+
+                for item in tool_response:
+                    if 'toolResult' in item and 'status' in item['toolResult']:
+                        del item['toolResult']['status']
+
                 return await self.invoke(tool_response)
                 
             except KeyError as e:
