@@ -6,13 +6,14 @@ from Amazon Bedrock while giving the models access to external tools via
 the Model Context Protocol (MCP).
 """
 import asyncio
-from mcp import StdioServerParameters
-from agent import BedrockConverseAgent
-from utility import UtilityHelper
-from mcpclient import MCPClient
+from strands import Agent
+from strands.tools.mcp import MCPClient
+from strands.models import BedrockModel
+from mcp import stdio_client, StdioServerParameters
 from datetime import datetime
 from server_configs import SERVER_CONFIGS
 from config import AWS_CONFIG
+
 
 # ANSI color codes for beautiful output in terminal
 class Colors:
@@ -43,12 +44,14 @@ def print_tools(tools):
     Print available tools in a formatted list.
     
     Args:
-        tools (list): List of tool specifications to display
+        tools (list): List of MCPAgentTool objects to display
     """
     print(f"{Colors.CYAN}Available Tools:{Colors.END}")
     for tool in tools:
-        print(f"  • {Colors.GREEN}{tool['name']}{Colors.END}: {tool['description']}")
-    print()  # Add a blank line for spacing
+        # Access properties through the tool's methods/attributes
+        tool_spec = tool.tool_spec  # This returns the ToolSpec dictionary
+        print(f"  • {Colors.GREEN}{tool_spec['name']}{Colors.END}: {tool_spec['description']}")
+    print()
 
 def format_message(role: str, content: str) -> str:
     """
@@ -76,7 +79,7 @@ async def handle_resource_update(uri: str):
     """
     print(f"{Colors.YELLOW}Resource updated: {uri}{Colors.END}")
     
-async def main():
+def main():
     """
     Main function that sets up and runs an interactive AI agent with tool integration.
     
@@ -91,51 +94,69 @@ async def main():
         None
     """
     # Initialize model configuration from config.py
-    model_id = AWS_CONFIG["model_id"]
-    region = AWS_CONFIG["region"]
+    # model_id = AWS_CONFIG["model_id"]
+    # region = AWS_CONFIG["region"]
     
-    # Set up the agent and tool manager
-    agent = BedrockConverseAgent(model_id, region)
-    agent.tools = UtilityHelper()
+    # # Set up the agent and tool manager
+    # agent = BedrockConverseAgent(model_id, region)
+    # agent.tools = UtilityHelper()
 
+    model_id = AWS_CONFIG["model_id"]
+
+    bedrock_model = BedrockModel(
+        model_id=model_id,
+        streaming=False
+    )
     # Define the agent's behavior through system prompt
-    agent.system_prompt = """
+    system_prompt = """
     You are a helpful assistant that can use tools to help you answer questions and perform tasks.
     Please remember and save user's preferences into memory based on user questions and conversations.
     """
     # Import server configs 
     server_configs = SERVER_CONFIGS
     
-    # Function to handle connection to a single MCP server
-    async def setup_mcp_client(server_param):
-        """Set up connection to an MCP server and register its tools."""
-        try:
-            mcp_client = MCPClient(server_param)
-            await mcp_client.__aenter__()  # manually enter async context
-            tools = await mcp_client.get_available_tools()
+    # # Function to handle connection to a single MCP server
+    # async def setup_mcp_client(server_param):
+    #     """Set up connection to an MCP server and register its tools."""
+    #     try:
+    #         mcp_client = MCPClient(server_param)
+    #         await mcp_client.__aenter__()  # manually enter async context
+    #         tools = await mcp_client.get_available_tools()
         
-            for tool in tools:
-                agent.tools.register_tool(
-                    name=tool['name'],
-                    func=mcp_client.call_tool,
-                    description=tool['description'],
-                    input_schema={'json': tool['inputSchema']}
-                )
+    #         for tool in tools:
+    #             agent.tools.register_tool(
+    #                 name=tool['name'],
+    #                 func=mcp_client.call_tool,
+    #                 description=tool['description'],
+    #                 input_schema={'json': tool['inputSchema']}
+    #             )
 
-            return mcp_client
-        except Exception as e:
-            print(f"Error setting up MCP client: {e}")
-            return None
+    #         return mcp_client
+    #     except Exception as e:
+    #         print(f"Error setting up MCP client: {e}")
+    #         return None
 
-    # Start all MCP clients and register their tools
-    mcp_clients = await asyncio.gather(*(setup_mcp_client(cfg) for cfg in server_configs))
+    # # Start all MCP clients and register their tools
+    # mcp_clients = await asyncio.gather(*(setup_mcp_client(cfg) for cfg in server_configs))
     
-    # Filter out any None values from failed client setups
-    mcp_clients = [client for client in mcp_clients if client is not None]
+    # # Filter out any None values from failed client setups
+    # mcp_clients = [client for client in mcp_clients if client is not None]
+    mcp_clients = []
+    tools = []
 
+    for server_config in server_configs:
+            print(server_config)
+            # Convert server_config to StdioServerParameters format
+            mcp_client = MCPClient(lambda: stdio_client(server_config))
+            
+            # Use context manager (not async)
+            mcp_clients.append(mcp_client)
+            with mcp_client:
+                client_tools = mcp_client.list_tools_sync()
+                tools.extend(client_tools) 
+    agent = Agent(model=bedrock_model, tools=tools,system_prompt=system_prompt)
     # Display welcome message and available tools
     print_welcome()
-    tools = [tool['toolSpec'] for tool in agent.tools.get_tools()['tools']]
     print_tools(tools)
 
     # Run interactive chat loop
@@ -153,7 +174,8 @@ async def main():
                 continue
 
             print(f"\n{Colors.YELLOW}Thinking...{Colors.END}")
-            response = await agent.invoke_with_prompt(user_prompt)
+            # response = await agent.invoke_with_prompt(user_prompt)
+            response = agent(user_prompt)
             
             # By default, use the standard response
             display_response = response
@@ -192,7 +214,8 @@ if __name__ == "__main__":
         asyncio.run = patched_run
         
         # Run the application
-        asyncio.run(main(), debug=False)
+        # asyncio.run(main(), debug=False)
+        main()
     except KeyboardInterrupt:
         print("\nApplication terminated by user.")
     except Exception as e:
