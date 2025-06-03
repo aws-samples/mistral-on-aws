@@ -13,6 +13,7 @@ from mcp import stdio_client, StdioServerParameters
 from datetime import datetime
 from server_configs import SERVER_CONFIGS
 from config import AWS_CONFIG
+from contextlib import ExitStack
 
 
 # ANSI color codes for beautiful output in terminal
@@ -113,81 +114,61 @@ def main():
     Please remember and save user's preferences into memory based on user questions and conversations.
     """
     # Import server configs 
-    server_configs = SERVER_CONFIGS
+    # server_configs = SERVER_CONFIGS
+    mcp_clients = [
+        MCPClient(lambda cfg=server_config: stdio_client(cfg))
+        for server_config in SERVER_CONFIGS
+    ]
     
-    # # Function to handle connection to a single MCP server
-    # async def setup_mcp_client(server_param):
-    #     """Set up connection to an MCP server and register its tools."""
-    #     try:
-    #         mcp_client = MCPClient(server_param)
-    #         await mcp_client.__aenter__()  # manually enter async context
-    #         tools = await mcp_client.get_available_tools()
+    with ExitStack() as stack:
+        # Enter all MCP clients and keep them active
+        for mcp_client in mcp_clients:
+            stack.enter_context(mcp_client)
         
-    #         for tool in tools:
-    #             agent.tools.register_tool(
-    #                 name=tool['name'],
-    #                 func=mcp_client.call_tool,
-    #                 description=tool['description'],
-    #                 input_schema={'json': tool['inputSchema']}
-    #             )
-
-    #         return mcp_client
-    #     except Exception as e:
-    #         print(f"Error setting up MCP client: {e}")
-    #         return None
-
-    # # Start all MCP clients and register their tools
-    # mcp_clients = await asyncio.gather(*(setup_mcp_client(cfg) for cfg in server_configs))
-    
-    # # Filter out any None values from failed client setups
-    # mcp_clients = [client for client in mcp_clients if client is not None]
-    mcp_clients = []
-    tools = []
-
-    for server_config in server_configs:
-            print(server_config)
-            # Convert server_config to StdioServerParameters format
-            mcp_client = MCPClient(lambda: stdio_client(server_config))
-            
-            # Use context manager (not async)
-            mcp_clients.append(mcp_client)
-            with mcp_client:
+        # Get tools from all clients
+        tools = []
+        for i, mcp_client in enumerate(mcp_clients):
+            try:
                 client_tools = mcp_client.list_tools_sync()
-                tools.extend(client_tools) 
-    agent = Agent(model=bedrock_model, tools=tools,system_prompt=system_prompt)
-    # Display welcome message and available tools
-    print_welcome()
-    print_tools(tools)
-
-    # Run interactive chat loop
-    try:
-        while True:
-            user_prompt = input(f"\n{Colors.BOLD}User: {Colors.END}")
-            if user_prompt.lower() in ['quit', 'exit', 'q']:
-                print(f"\n{Colors.CYAN}Goodbye! Thanks for chatting!{Colors.END}")
-                
-                # Force immediate termination when user quits
-                import os
-                os._exit(0)
-                
-            if not user_prompt.strip():
-                continue
-
-            print(f"\n{Colors.YELLOW}Thinking...{Colors.END}")
-            # response = await agent.invoke_with_prompt(user_prompt)
-            response = agent(user_prompt)
-            
-            # By default, use the standard response
-            display_response = response
-
-            
-            print(f"\n{format_message('assistant', display_response)}")
-    except KeyboardInterrupt:
-        print(f"\n{Colors.CYAN}Goodbye! Thanks for chatting!{Colors.END}")
+                tools.extend(client_tools)
+                print(f"Loaded {len(client_tools)} tools from client {i+1}")
+            except Exception as e:
+                print(f"Error getting tools from MCP client {i+1}: {e}")
         
-        # Force immediate termination on keyboard interrupt
-        import os
-        os._exit(0)
+        agent = Agent(model=bedrock_model, tools=tools,system_prompt=system_prompt)
+        # Display welcome message and available tools
+        print_welcome()
+        print_tools(tools)
+
+        # Run interactive chat loop
+        try:
+            while True:
+                user_prompt = input(f"\n{Colors.BOLD}User: {Colors.END}")
+                if user_prompt.lower() in ['quit', 'exit', 'q']:
+                    print(f"\n{Colors.CYAN}Goodbye! Thanks for chatting!{Colors.END}")
+                    
+                    # Force immediate termination when user quits
+                    import os
+                    os._exit(0)
+                    
+                if not user_prompt.strip():
+                    continue
+
+                print(f"\n{Colors.YELLOW}Thinking...{Colors.END}")
+                # response = await agent.invoke_with_prompt(user_prompt)
+                response = agent(user_prompt)
+                
+                # By default, use the standard response
+                display_response = response
+
+                
+                print(f"\n{format_message('assistant', display_response)}")
+        except KeyboardInterrupt:
+            print(f"\n{Colors.CYAN}Goodbye! Thanks for chatting!{Colors.END}")
+            
+            # Force immediate termination on keyboard interrupt
+            import os
+            os._exit(0)
 
 
 if __name__ == "__main__":
