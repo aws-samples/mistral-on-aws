@@ -80,7 +80,7 @@ async def handle_resource_update(uri: str):
     """
     print(f"{Colors.YELLOW}Resource updated: {uri}{Colors.END}")
     
-def main():
+async def main():
     """
     Main function that sets up and runs an interactive AI agent with tool integration.
     
@@ -95,13 +95,6 @@ def main():
         None
     """
     # Initialize model configuration from config.py
-    # model_id = AWS_CONFIG["model_id"]
-    # region = AWS_CONFIG["region"]
-    
-    # # Set up the agent and tool manager
-    # agent = BedrockConverseAgent(model_id, region)
-    # agent.tools = UtilityHelper()
-
     model_id = AWS_CONFIG["model_id"]
 
     bedrock_model = BedrockModel(
@@ -114,10 +107,10 @@ def main():
     Please remember and save user's preferences into memory based on user questions and conversations.
     """
     # Import server configs 
-    # server_configs = SERVER_CONFIGS
+    server_configs = SERVER_CONFIGS
     mcp_clients = [
         MCPClient(lambda cfg=server_config: stdio_client(cfg))
-        for server_config in SERVER_CONFIGS
+        for server_config in server_configs
     ]
     
     with ExitStack() as stack:
@@ -195,8 +188,7 @@ if __name__ == "__main__":
         asyncio.run = patched_run
         
         # Run the application
-        # asyncio.run(main(), debug=False)
-        main()
+        asyncio.run(main(), debug=False)
     except KeyboardInterrupt:
         print("\nApplication terminated by user.")
     except Exception as e:
