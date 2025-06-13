@@ -1,0 +1,900 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'SageMaker Studio Domain with JupyterLab, ml.m5.2xlarge instance, and comprehensive IAM permissions'
+
+Parameters:
+  DomainName:
+    Type: String
+    Default: 'mistral-workshop-domain'
+    Description: 'Name for the SageMaker Studio Domain'
+  
+  UserProfileName:
+    Type: String
+    Default: 'workshop-user'
+    Description: 'Name for the SageMaker Studio User Profile'
+  
+  DefaultInstanceType:
+    Type: String
+    Default: 'ml.g6.8xlarge'
+    AllowedValues:
+      - ml.m5.large
+      - ml.m5.xlarge
+      - ml.m5.2xlarge
+      - ml.m5.4xlarge
+      - ml.g6.xlarge
+      - ml.g6.2xlarge
+      - ml.g6.4xlarge
+      - ml.g6.8xlarge
+      - ml.g6.12xlarge
+      - ml.g6.16xlarge
+    Description: 'Default instance type for Kernel Gateway (compute kernels) - users can choose this when creating notebooks'
+  
+  VpcCidr:
+    Type: String
+    Default: '10.0.0.0/16'
+    Description: 'CIDR block for the VPC'
+  
+  CreateVpcResources:
+    Type: String
+    Default: 'Yes'
+    AllowedValues:
+      - 'Yes'
+      - 'No'
+    Description: 'Create new VPC and networking resources? Choose No if you want to use existing VPC'
+  
+  ExistingVpcId:
+    Type: String
+    Default: ''
+    Description: 'Existing VPC ID (only used if CreateVpcResources = No)'
+  
+  ExistingSubnetIds:
+    Type: CommaDelimitedList
+    Default: ''
+    Description: 'Existing Subnet IDs (only used if CreateVpcResources = No)'
+
+Mappings:
+  SageMakerImageArn:
+    us-east-1:
+      JupyterServer: 'arn:aws:sagemaker:us-east-1:081325390199:image/jupyter-server-3'
+      JupyterLab: 'arn:aws:sagemaker:us-east-1:081325390199:image/sagemaker-distribution-cpu'
+    us-east-2:
+      JupyterServer: 'arn:aws:sagemaker:us-east-2:429704687514:image/jupyter-server-3'
+      JupyterLab: 'arn:aws:sagemaker:us-east-2:429704687514:image/sagemaker-distribution-cpu'
+    us-west-1:
+      JupyterServer: 'arn:aws:sagemaker:us-west-1:742091327244:image/jupyter-server-3'
+      JupyterLab: 'arn:aws:sagemaker:us-west-1:742091327244:image/sagemaker-distribution-cpu'
+    us-west-2:
+      JupyterServer: 'arn:aws:sagemaker:us-west-2:236514542706:image/jupyter-server-3'
+      JupyterLab: 'arn:aws:sagemaker:us-west-2:236514542706:image/sagemaker-distribution-cpu'
+    eu-west-1:
+      JupyterServer: 'arn:aws:sagemaker:eu-west-1:470317259841:image/jupyter-server-3'
+      JupyterLab: 'arn:aws:sagemaker:eu-west-1:470317259841:image/sagemaker-distribution-cpu'
+    eu-west-2:
+      JupyterServer: 'arn:aws:sagemaker:eu-west-2:712779665605:image/jupyter-server-3'
+      JupyterLab: 'arn:aws:sagemaker:eu-west-2:712779665605:image/sagemaker-distribution-cpu'
+    eu-central-1:
+      JupyterServer: 'arn:aws:sagemaker:eu-central-1:936697816551:image/jupyter-server-3'
+      JupyterLab: 'arn:aws:sagemaker:eu-central-1:936697816551:image/sagemaker-distribution-cpu'
+    ap-southeast-1:
+      JupyterServer: 'arn:aws:sagemaker:ap-southeast-1:492261229750:image/jupyter-server-3'
+      JupyterLab: 'arn:aws:sagemaker:ap-southeast-1:492261229750:image/sagemaker-distribution-cpu'
+    ap-southeast-2:
+      JupyterServer: 'arn:aws:sagemaker:ap-southeast-2:452832661640:image/jupyter-server-3'
+      JupyterLab: 'arn:aws:sagemaker:ap-southeast-2:452832661640:image/sagemaker-distribution-cpu'
+    ap-northeast-1:
+      JupyterServer: 'arn:aws:sagemaker:ap-northeast-1:102112518831:image/jupyter-server-3'
+      JupyterLab: 'arn:aws:sagemaker:ap-northeast-1:102112518831:image/sagemaker-distribution-cpu'
+
+Conditions:
+  CreateVpc: !Equals [!Ref CreateVpcResources, 'Yes']
+  UseExistingVpc: !Equals [!Ref CreateVpcResources, 'No']
+
+Resources:
+  # VPC and Networking Resources (created only if CreateVpcResources = Yes)
+  WorkshopVPC:
+    Type: AWS::EC2::VPC
+    Condition: CreateVpc
+    Properties:
+      CidrBlock: !Ref VpcCidr
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-Workshop-VPC'
+        - Key: Purpose
+          Value: 'SageMaker Studio Workshop'
+
+  # Internet Gateway
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Condition: CreateVpc
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-IGW'
+
+  # Attach Internet Gateway to VPC
+  InternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Condition: CreateVpc
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref WorkshopVPC
+
+  # Public Subnet 1 (for NAT Gateway)
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Condition: CreateVpc
+    Properties:
+      VpcId: !Ref WorkshopVPC
+      AvailabilityZone: !Select [0, !GetAZs '']
+      CidrBlock: !Select [0, !Cidr [!Ref VpcCidr, 6, 8]]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-Public-Subnet-1'
+
+  # Public Subnet 2 (for high availability)
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Condition: CreateVpc
+    Properties:
+      VpcId: !Ref WorkshopVPC
+      AvailabilityZone: !Select [1, !GetAZs '']
+      CidrBlock: !Select [1, !Cidr [!Ref VpcCidr, 6, 8]]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-Public-Subnet-2'
+
+  # Private Subnet 1 (for SageMaker Studio)
+  PrivateSubnet1:
+    Type: AWS::EC2::Subnet
+    Condition: CreateVpc
+    Properties:
+      VpcId: !Ref WorkshopVPC
+      AvailabilityZone: !Select [0, !GetAZs '']
+      CidrBlock: !Select [2, !Cidr [!Ref VpcCidr, 6, 8]]
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-Private-Subnet-1'
+
+  # Private Subnet 2 (for SageMaker Studio HA)
+  PrivateSubnet2:
+    Type: AWS::EC2::Subnet
+    Condition: CreateVpc
+    Properties:
+      VpcId: !Ref WorkshopVPC
+      AvailabilityZone: !Select [1, !GetAZs '']
+      CidrBlock: !Select [3, !Cidr [!Ref VpcCidr, 6, 8]]
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-Private-Subnet-2'
+
+  # Elastic IP for NAT Gateway
+  NatGatewayEIP:
+    Type: AWS::EC2::EIP
+    Condition: CreateVpc
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      Domain: vpc
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-NAT-EIP'
+
+  # NAT Gateway
+  NatGateway:
+    Type: AWS::EC2::NatGateway
+    Condition: CreateVpc
+    Properties:
+      AllocationId: !GetAtt NatGatewayEIP.AllocationId
+      SubnetId: !Ref PublicSubnet1
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-NAT-Gateway'
+
+  # Public Route Table
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Condition: CreateVpc
+    Properties:
+      VpcId: !Ref WorkshopVPC
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-Public-Routes'
+
+  # Public Route to Internet Gateway
+  DefaultPublicRoute:
+    Type: AWS::EC2::Route
+    Condition: CreateVpc
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  # Associate Public Subnets with Public Route Table
+  PublicSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Condition: CreateVpc
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet1
+
+  PublicSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Condition: CreateVpc
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet2
+
+  # Private Route Table
+  PrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Condition: CreateVpc
+    Properties:
+      VpcId: !Ref WorkshopVPC
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-Private-Routes'
+
+  # Private Route to NAT Gateway
+  DefaultPrivateRoute:
+    Type: AWS::EC2::Route
+    Condition: CreateVpc
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway
+
+  # Associate Private Subnets with Private Route Table
+  PrivateSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Condition: CreateVpc
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      SubnetId: !Ref PrivateSubnet1
+
+  PrivateSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Condition: CreateVpc
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      SubnetId: !Ref PrivateSubnet2
+
+  # IAM Role for Lambda Cleanup Function
+  CleanupLambdaRole:
+    Type: AWS::IAM::Role
+    DeletionPolicy: Retain
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: CleanupResources
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:DeleteNetworkInterface
+                  - ec2:DetachNetworkInterface
+                  - ec2:ModifyNetworkInterfaceAttribute
+                  - ec2:DescribeSecurityGroups
+                  - ec2:DeleteSecurityGroup
+                  - ec2:RevokeSecurityGroupIngress
+                  - ec2:RevokeSecurityGroupEgress
+                  - ec2:DescribeVpcs
+                  - ec2:DescribeRouteTables
+                  - ec2:DescribeNatGateways
+                  - ec2:DeleteNatGateway
+                  - sagemaker:ListApps
+                  - sagemaker:DeleteApp
+                  - sagemaker:DescribeApp
+                  - sagemaker:ListSpaces
+                  - sagemaker:DescribeSpace
+                  - elasticfilesystem:DescribeFileSystems
+                  - elasticfilesystem:DescribeMountTargets
+                  - elasticfilesystem:DeleteMountTarget
+                  - elasticfilesystem:DeleteFileSystem
+                Resource: '*'
+
+  # Lambda Function for Cleanup
+  CleanupLambdaFunction:
+    Type: AWS::Lambda::Function
+    DeletionPolicy: Retain
+    Properties:
+      FunctionName: !Sub '${AWS::StackName}-cleanup-function'
+      Runtime: python3.9
+      Handler: index.lambda_handler
+      Role: !GetAtt CleanupLambdaRole.Arn
+      Timeout: 900
+      Code:
+        ZipFile: |
+          import boto3
+          import json
+          import time
+          import cfnresponse
+          
+          def lambda_handler(event, context):
+              try:
+                  print(f"Event: {json.dumps(event)}")
+                  
+                  if event['RequestType'] == 'Delete':
+                      ec2 = boto3.client('ec2')
+                      sagemaker = boto3.client('sagemaker')
+                      efs = boto3.client('efs')
+                      
+                      # Get subnet IDs from event
+                      subnet_ids = event['ResourceProperties'].get('SubnetIds', [])
+                      domain_id = event['ResourceProperties'].get('DomainId', '')
+                      vpc_id = event['ResourceProperties'].get('VpcId', '')
+                      
+                      print(f"Cleaning up subnets: {subnet_ids}")
+                      print(f"Domain ID: {domain_id}")
+                      print(f"VPC ID: {vpc_id}")
+                      
+                      # Delete SageMaker Apps first
+                      if domain_id:
+                          try:
+                              apps = sagemaker.list_apps(DomainIdEquals=domain_id)
+                              for app in apps.get('Apps', []):
+                                  print(f"Deleting app: {app}")
+                                  sagemaker.delete_app(
+                                      DomainId=app['DomainId'],
+                                      UserProfileName=app.get('UserProfileName'),
+                                      SpaceName=app.get('SpaceName'),
+                                      AppType=app['AppType'],
+                                      AppName=app['AppName']
+                                  )
+                              
+                              # Wait for apps to be deleted
+                              time.sleep(30)
+                          except Exception as e:
+                              print(f"Error deleting SageMaker apps: {e}")
+                      
+                      # Delete EFS Mount Targets in subnets
+                      efs_to_delete = []
+                      for subnet_id in subnet_ids:
+                          try:
+                              print(f"Checking EFS mount targets in subnet {subnet_id}")
+                              # Find EFS mount targets in subnet
+                              filesystems = efs.describe_file_systems()
+                              print(f"Found {len(filesystems['FileSystems'])} EFS filesystems")
+                              
+                              for filesystem in filesystems['FileSystems']:
+                                  fs_id = filesystem['FileSystemId']
+                                  try:
+                                      mount_targets = efs.describe_mount_targets(FileSystemId=fs_id)
+                                      
+                                      for mt in mount_targets['MountTargets']:
+                                          if mt['SubnetId'] == subnet_id:
+                                              print(f"Deleting EFS mount target {mt['MountTargetId']} for filesystem {fs_id} in subnet {subnet_id}")
+                                              efs.delete_mount_target(MountTargetId=mt['MountTargetId'])
+                                              
+                                              # Track filesystems that may need deletion
+                                              if fs_id not in efs_to_delete:
+                                                  efs_to_delete.append(fs_id)
+                                  except Exception as mt_error:
+                                      print(f"Error processing mount targets for filesystem {fs_id}: {mt_error}")
+                                      
+                          except Exception as e:
+                              print(f"Error cleaning up EFS in subnet {subnet_id}: {e}")
+                      
+                      # Wait for mount targets to be deleted
+                      if efs_to_delete:
+                          print(f"Waiting 90 seconds for {len(efs_to_delete)} EFS mount targets to be deleted...")
+                          time.sleep(90)
+                          
+                          # Check if filesystems can be deleted
+                          for fs_id in efs_to_delete:
+                              try:
+                                  remaining_mts = efs.describe_mount_targets(FileSystemId=fs_id)
+                                  if not remaining_mts['MountTargets']:
+                                      print(f"Deleting EFS filesystem {fs_id}")
+                                      efs.delete_file_system(FileSystemId=fs_id)
+                                  else:
+                                      print(f"EFS filesystem {fs_id} still has mount targets, skipping deletion")
+                              except Exception as e:
+                                  print(f"Error deleting EFS filesystem {fs_id}: {e}")
+                      
+                      # Delete network interfaces in subnets
+                      for subnet_id in subnet_ids:
+                          try:
+                              # Find network interfaces in subnet
+                              response = ec2.describe_network_interfaces(
+                                  Filters=[{'Name': 'subnet-id', 'Values': [subnet_id]}]
+                              )
+                              
+                              for eni in response.get('NetworkInterfaces', []):
+                                  eni_id = eni['NetworkInterfaceId']
+                                  print(f"Found ENI {eni_id} in subnet {subnet_id}")
+                                  print(f"ENI Status: {eni.get('Status')}")
+                                  print(f"ENI Description: {eni.get('Description', 'N/A')}")
+                                  
+                                  # Check if ENI has attachment
+                                  attachment = eni.get('Attachment')
+                                  if attachment:
+                                      print(f"ENI {eni_id} has attachment: {attachment}")
+                                      attachment_id = attachment.get('AttachmentId')
+                                      instance_id = attachment.get('InstanceId')
+                                      
+                                      # Skip if attached to EC2 instance (we can't control those)
+                                      if instance_id:
+                                          print(f"ENI {eni_id} attached to EC2 instance {instance_id}, skipping")
+                                          continue
+                                      
+                                      # Try to detach if it's attached to other AWS services
+                                      if attachment_id and not attachment.get('DeleteOnTermination', False):
+                                          try:
+                                              print(f"Detaching ENI {eni_id} (attachment: {attachment_id})")
+                                              ec2.detach_network_interface(
+                                                  AttachmentId=attachment_id,
+                                                  Force=True
+                                              )
+                                              print(f"Detached ENI {eni_id}")
+                                              # Wait a bit for detachment to complete
+                                              time.sleep(10)
+                                          except Exception as detach_error:
+                                              print(f"Error detaching ENI {eni_id}: {detach_error}")
+                                              continue
+                                  
+                                  # Delete the ENI
+                                  try:
+                                      # Wait a bit more to ensure detachment is complete
+                                      time.sleep(5)
+                                      ec2.delete_network_interface(NetworkInterfaceId=eni_id)
+                                      print(f"Deleted ENI {eni_id}")
+                                  except Exception as e:
+                                      print(f"Error deleting ENI {eni_id}: {e}")
+                                      # If it's still in use, try force detach one more time
+                                      if "currently in use" in str(e):
+                                          try:
+                                              print(f"Attempting force detach for ENI {eni_id}")
+                                              # Get current attachment info
+                                              current_eni = ec2.describe_network_interfaces(NetworkInterfaceIds=[eni_id])
+                                              current_attachment = current_eni['NetworkInterfaces'][0].get('Attachment')
+                                              if current_attachment:
+                                                  ec2.detach_network_interface(
+                                                      AttachmentId=current_attachment['AttachmentId'],
+                                                      Force=True
+                                                  )
+                                                  time.sleep(15)  # Wait longer
+                                                  ec2.delete_network_interface(NetworkInterfaceId=eni_id)
+                                                  print(f"Force deleted ENI {eni_id}")
+                                          except Exception as force_error:
+                                              print(f"Force delete also failed for ENI {eni_id}: {force_error}")
+                                      
+                          except Exception as e:
+                              print(f"Error processing subnet {subnet_id}: {e}")
+                      
+                      # Clean up VPC dependencies
+                      if vpc_id:
+                          try:
+                              # Step 1: Remove all security group rules first (to break circular dependencies)
+                              print("Step 1: Removing all security group rules to break dependencies")
+                              security_groups = ec2.describe_security_groups(
+                                  Filters=[{'Name': 'vpc-id', 'Values': [vpc_id]}]
+                              )
+                              
+                              non_default_sgs = [sg for sg in security_groups['SecurityGroups'] if sg['GroupName'] != 'default']
+                              print(f"Found {len(non_default_sgs)} non-default security groups")
+                              
+                              # Remove all rules from all security groups first
+                              for sg in non_default_sgs:
+                                  sg_id = sg['GroupId']
+                                  print(f"Removing rules from security group {sg_id} ({sg.get('GroupName', 'unnamed')})")
+                                  
+                                  try:
+                                      # Remove all ingress rules
+                                      if sg.get('IpPermissions'):
+                                          print(f"Removing {len(sg['IpPermissions'])} ingress rules from {sg_id}")
+                                          ec2.revoke_security_group_ingress(
+                                              GroupId=sg_id,
+                                              IpPermissions=sg['IpPermissions']
+                                          )
+                                      
+                                      # Remove all egress rules (except the default allow-all rule)
+                                      if sg.get('IpPermissionsEgress'):
+                                          print(f"Removing {len(sg['IpPermissionsEgress'])} egress rules from {sg_id}")
+                                          ec2.revoke_security_group_egress(
+                                              GroupId=sg_id,
+                                              IpPermissions=sg['IpPermissionsEgress']
+                                          )
+                                      
+                                      print(f"Removed all rules from security group {sg_id}")
+                                  except Exception as rule_error:
+                                      print(f"Error removing rules from security group {sg_id}: {rule_error}")
+                              
+                              # Wait for rule changes to propagate
+                              print("Waiting 30 seconds for rule changes to propagate...")
+                              time.sleep(30)
+                              
+                              # Step 2: Delete security groups (multiple attempts for dependencies)
+                              print("Step 2: Deleting security groups")
+                              max_attempts = 3
+                              for attempt in range(max_attempts):
+                                  print(f"Security group deletion attempt {attempt + 1}")
+                                  remaining_sgs = []
+                                  
+                                  # Get fresh list of security groups
+                                  security_groups = ec2.describe_security_groups(
+                                      Filters=[{'Name': 'vpc-id', 'Values': [vpc_id]}]
+                                  )
+                                  
+                                  for sg in security_groups['SecurityGroups']:
+                                      if sg['GroupName'] != 'default':
+                                          sg_id = sg['GroupId']
+                                          try:
+                                              ec2.delete_security_group(GroupId=sg_id)
+                                              print(f"Deleted security group {sg_id}")
+                                          except Exception as delete_error:
+                                              print(f"Could not delete security group {sg_id}: {delete_error}")
+                                              remaining_sgs.append(sg_id)
+                                  
+                                  if not remaining_sgs:
+                                      print("All security groups deleted successfully")
+                                      break
+                                  else:
+                                      print(f"{len(remaining_sgs)} security groups remaining: {remaining_sgs}")
+                                      if attempt < max_attempts - 1:
+                                          print("Waiting 20 seconds before retry...")
+                                          time.sleep(20)
+                              
+                              # Step 3: Clean up NAT Gateways
+                              print("Step 3: Cleaning up NAT Gateways")
+                              nat_gateways = ec2.describe_nat_gateways(
+                                  Filters=[{'Name': 'vpc-id', 'Values': [vpc_id]}]
+                              )
+                              
+                              for nat in nat_gateways['NatGateways']:
+                                  if nat['State'] not in ['deleted', 'deleting']:
+                                      nat_id = nat['NatGatewayId']
+                                      print(f"Deleting NAT Gateway {nat_id}")
+                                      try:
+                                          ec2.delete_nat_gateway(NatGatewayId=nat_id)
+                                          print(f"Initiated deletion of NAT Gateway {nat_id}")
+                                      except Exception as nat_error:
+                                          print(f"Error deleting NAT Gateway {nat_id}: {nat_error}")
+                              
+                              print("VPC dependency cleanup completed")
+                              
+                          except Exception as e:
+                              print(f"Error cleaning up VPC dependencies: {e}")
+                  
+                  cfnresponse.send(event, context, cfnresponse.SUCCESS, {})
+                  
+              except Exception as e:
+                  print(f"Error in cleanup function: {e}")
+                  cfnresponse.send(event, context, cfnresponse.FAILED, {})
+
+  # IAM Role for SageMaker Execution
+  SageMakerExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${AWS::StackName}-SageMakerExecutionRole'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - sagemaker.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSageMakerFullAccess
+        - arn:aws:iam::aws:policy/AmazonBedrockFullAccess
+      Policies:
+        - PolicyName: S3ReadAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:GetObjectVersion
+                  - s3:ListBucket
+                  - s3:ListBucketVersions
+                Resource:
+                  - 'arn:aws:s3:::*'
+                  - 'arn:aws:s3:::*/*'
+        - PolicyName: AdditionalPermissions
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - logs:DescribeLogStreams
+                Resource: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*'
+              - Effect: Allow
+                Action:
+                  - ec2:CreateNetworkInterface
+                  - ec2:CreateNetworkInterfacePermission
+                  - ec2:DeleteNetworkInterface
+                  - ec2:DeleteNetworkInterfacePermission
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:DescribeVpcs
+                  - ec2:DescribeSubnets
+                  - ec2:DescribeSecurityGroups
+                Resource: '*'
+
+  # Security Group for SageMaker Studio
+  SageMakerStudioSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub '${AWS::StackName}-SageMakerStudio-SG'
+      GroupDescription: 'Security Group for SageMaker Studio Domain'
+      VpcId: !If [CreateVpc, !Ref WorkshopVPC, !Ref ExistingVpcId]
+      SecurityGroupEgress:
+        - IpProtocol: '-1'
+          CidrIp: '0.0.0.0/0'
+          Description: 'Allow all outbound traffic'
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-SageMakerStudio-SG'
+
+  # Security Group Ingress Rule (separate to avoid circular dependency)
+  SageMakerStudioSecurityGroupIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref SageMakerStudioSecurityGroup
+      IpProtocol: 'tcp'
+      FromPort: 443
+      ToPort: 443
+      SourceSecurityGroupId: !Ref SageMakerStudioSecurityGroup
+      Description: 'Allow HTTPS traffic within security group'
+
+  # SageMaker Studio Domain
+  SageMakerStudioDomain:
+    Type: AWS::SageMaker::Domain
+    DeletionPolicy: Delete
+    DependsOn:
+      - SageMakerStudioSecurityGroup
+      - SageMakerExecutionRole
+    Properties:
+      DomainName: !Ref DomainName
+      AuthMode: 'IAM'
+      DefaultUserSettings:
+        ExecutionRole: !GetAtt SageMakerExecutionRole.Arn
+        SecurityGroups:
+          - !Ref SageMakerStudioSecurityGroup
+        JupyterServerAppSettings:
+          DefaultResourceSpec:
+            InstanceType: 'system'
+            SageMakerImageArn: !FindInMap [SageMakerImageArn, !Ref 'AWS::Region', JupyterServer]
+        KernelGatewayAppSettings:
+          DefaultResourceSpec:
+            InstanceType: !Ref DefaultInstanceType
+        SpaceStorageSettings:
+          DefaultEbsStorageSettings:
+            DefaultEbsVolumeSizeInGb: 100
+            MaximumEbsVolumeSizeInGb: 200
+      VpcId: !If [CreateVpc, !Ref WorkshopVPC, !Ref ExistingVpcId]
+      SubnetIds: !If 
+        - CreateVpc
+        - [!Ref PrivateSubnet1, !Ref PrivateSubnet2]
+        - !Ref ExistingSubnetIds
+      DomainSettings:
+        SecurityGroupIds:
+          - !Ref SageMakerStudioSecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Ref DomainName
+        - Key: Purpose
+          Value: 'MCP Workshop Environment'
+
+  # SageMaker Studio User Profile
+  SageMakerUserProfile:
+    Type: AWS::SageMaker::UserProfile
+    DeletionPolicy: Delete
+    DependsOn:
+      - SageMakerStudioDomain
+    Properties:
+      DomainId: !Ref SageMakerStudioDomain
+      UserProfileName: !Ref UserProfileName
+      UserSettings:
+        ExecutionRole: !GetAtt SageMakerExecutionRole.Arn
+        SecurityGroups:
+          - !Ref SageMakerStudioSecurityGroup
+        JupyterServerAppSettings:
+          DefaultResourceSpec:
+            InstanceType: 'system'
+            SageMakerImageArn: !FindInMap [SageMakerImageArn, !Ref 'AWS::Region', JupyterServer]
+        KernelGatewayAppSettings:
+          DefaultResourceSpec:
+            InstanceType: !Ref DefaultInstanceType
+        SpaceStorageSettings:
+          DefaultEbsStorageSettings:
+            DefaultEbsVolumeSizeInGb: 100
+            MaximumEbsVolumeSizeInGb: 200
+      Tags:
+        - Key: Name
+          Value: !Ref UserProfileName
+        - Key: Purpose
+          Value: 'MCP Workshop User'
+
+  # JupyterLab Space for ml.m5.4xlarge with 100GB storage
+  JupyterLabSpace:
+    Type: AWS::SageMaker::Space
+    DeletionPolicy: Delete
+    DependsOn:
+      - SageMakerUserProfile
+    Properties:
+      DomainId: !Ref SageMakerStudioDomain
+      SpaceName: 'jupyterlab-workspace'
+      OwnershipSettings:
+        OwnerUserProfileName: !Ref UserProfileName
+      SpaceSharingSettings:
+        SharingType: 'Private'
+      SpaceSettings:
+        AppType: 'JupyterLab'
+        JupyterLabAppSettings:
+          DefaultResourceSpec:
+            InstanceType: 'ml.g6.8xlarge'
+            SageMakerImageArn: !FindInMap [SageMakerImageArn, !Ref 'AWS::Region', JupyterLab]
+        SpaceStorageSettings:
+          EbsStorageSettings:
+            EbsVolumeSizeInGb: 100
+      Tags:
+        - Key: Name
+          Value: 'JupyterLab Workspace'
+        - Key: Purpose
+          Value: 'MCP Workshop JupyterLab Environment'
+
+  # Custom Resource to trigger cleanup on stack deletion
+  CleanupResource:
+    Type: AWS::CloudFormation::CustomResource
+    DeletionPolicy: Delete
+    DependsOn:
+      - JupyterLabSpace
+      - SageMakerUserProfile
+      - SageMakerStudioDomain
+      - CleanupLambdaFunction
+    Properties:
+      ServiceToken: !GetAtt CleanupLambdaFunction.Arn
+      SubnetIds: !If 
+        - CreateVpc
+        - [!Ref PrivateSubnet1, !Ref PrivateSubnet2]
+        - !Ref ExistingSubnetIds
+      DomainId: !Ref SageMakerStudioDomain
+      VpcId: !If [CreateVpc, !Ref WorkshopVPC, !Ref ExistingVpcId]
+
+
+Outputs:
+  SageMakerDomainId:
+    Description: 'SageMaker Studio Domain ID'
+    Value: !Ref SageMakerStudioDomain
+    Export:
+      Name: !Sub '${AWS::StackName}-DomainId'
+
+  SageMakerDomainArn:
+    Description: 'SageMaker Studio Domain ARN'
+    Value: !Sub 'arn:aws:sagemaker:${AWS::Region}:${AWS::AccountId}:domain/${SageMakerStudioDomain}'
+    Export:
+      Name: !Sub '${AWS::StackName}-DomainArn'
+
+  UserProfileName:
+    Description: 'SageMaker Studio User Profile Name'
+    Value: !Ref SageMakerUserProfile
+    Export:
+      Name: !Sub '${AWS::StackName}-UserProfile'
+
+  JupyterLabSpaceName:
+    Description: 'JupyterLab Space Name'
+    Value: !Ref JupyterLabSpace
+    Export:
+      Name: !Sub '${AWS::StackName}-JupyterLabSpace'
+
+  ExecutionRoleArn:
+    Description: 'SageMaker Execution Role ARN'
+    Value: !GetAtt SageMakerExecutionRole.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-ExecutionRole'
+
+  StudioUrl:
+    Description: 'SageMaker Studio URL'
+    Value: !Sub 'https://${SageMakerStudioDomain}.studio.${AWS::Region}.sagemaker.aws/jupyter/default/lab'
+
+  ConsoleUrl:
+    Description: 'SageMaker Studio Console URL'
+    Value: !Sub 'https://console.aws.amazon.com/sagemaker/home?region=${AWS::Region}#/studio/${SageMakerStudioDomain}'
+
+  SecurityGroupId:
+    Description: 'Security Group ID for SageMaker Studio'
+    Value: !Ref SageMakerStudioSecurityGroup
+    Export:
+      Name: !Sub '${AWS::StackName}-SecurityGroup'
+
+  # VPC-related outputs (only shown if VPC was created)
+  VpcId:
+    Condition: CreateVpc
+    Description: 'VPC ID created for the workshop'
+    Value: !Ref WorkshopVPC
+    Export:
+      Name: !Sub '${AWS::StackName}-VPC'
+
+  PrivateSubnet1Id:
+    Condition: CreateVpc
+    Description: 'Private Subnet 1 ID'
+    Value: !Ref PrivateSubnet1
+    Export:
+      Name: !Sub '${AWS::StackName}-PrivateSubnet1'
+
+  PrivateSubnet2Id:
+    Condition: CreateVpc
+    Description: 'Private Subnet 2 ID'
+    Value: !Ref PrivateSubnet2
+    Export:
+      Name: !Sub '${AWS::StackName}-PrivateSubnet2'
+
+  PublicSubnet1Id:
+    Condition: CreateVpc
+    Description: 'Public Subnet 1 ID'
+    Value: !Ref PublicSubnet1
+    Export:
+      Name: !Sub '${AWS::StackName}-PublicSubnet1'
+
+  PublicSubnet2Id:
+    Condition: CreateVpc
+    Description: 'Public Subnet 2 ID'
+    Value: !Ref PublicSubnet2
+    Export:
+      Name: !Sub '${AWS::StackName}-PublicSubnet2'
+
+  NatGatewayId:
+    Condition: CreateVpc
+    Description: 'NAT Gateway ID'
+    Value: !Ref NatGateway
+
+  DeploymentInstructions:
+    Description: 'Post-deployment instructions'
+    Value: |
+      1. Navigate to the SageMaker Console URL provided above
+      2. Select your user profile (workshop-user) and click 'Launch' -> 'Studio'
+      3. A pre-configured JupyterLab space (jupyterlab-workspace) with ml.g6.8xlarge and 100GB storage is available
+      4. Click on the 'jupyterlab-workspace' space and select 'Run space' to launch JupyterLab
+      5. Alternatively, create new notebooks with your preferred instance type (default: ml.g6.8xlarge)
+      6. Storage is configured with 100GB default, expandable to 200GB
+      7. Upload your Mistral workshop notebook and begin!
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: "SageMaker Configuration"
+        Parameters:
+          - DomainName
+          - UserProfileName
+          - DefaultInstanceType
+      - Label:
+          default: "Network Configuration"
+        Parameters:
+          - CreateVpcResources
+          - VpcCidr
+          - ExistingVpcId
+          - ExistingSubnetIds
+    ParameterLabels:
+      DomainName:
+        default: "Domain Name"
+      UserProfileName:
+        default: "User Profile Name"
+      DefaultInstanceType:
+        default: "Default Instance Type"
+      CreateVpcResources:
+        default: "Create VPC Resources?"
+      VpcCidr:
+        default: "VPC CIDR Block"
+      ExistingVpcId:
+        default: "Existing VPC ID"
+      ExistingSubnetIds:
+        default: "Existing Subnet IDs"
