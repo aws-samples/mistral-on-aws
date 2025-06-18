@@ -10,3 +10,10 @@ strands-agents>=0.1.6
 strands-agents-tools>=0.1.4
 uv
 mcp_weather_server
+accelerate>=1.6.0
+torch 
+bitsandbytes 
+transformers==4.46.3 
+peft 
+datasets
+tensorboardX
