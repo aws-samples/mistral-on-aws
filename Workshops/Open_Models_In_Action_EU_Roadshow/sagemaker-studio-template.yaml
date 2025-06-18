@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'SageMaker Studio Domain with JupyterLab, ml.m5.2xlarge instance, and comprehensive IAM permissions'
+Description: 'SageMaker Studio Domain with JupyterLab, ml.m5.4xlarge instance, and comprehensive IAM permissions'
 
 Parameters:
   DomainName:
@@ -14,18 +14,33 @@ Parameters:
   
   DefaultInstanceType:
     Type: String
-    Default: 'ml.g6.8xlarge'
+    Default: 'ml.m5.4xlarge'
     AllowedValues:
+      - ml.t3.medium
+      - ml.t3.large
+      - ml.t3.xlarge
+      - ml.t3.2xlarge
       - ml.m5.large
       - ml.m5.xlarge
       - ml.m5.2xlarge
       - ml.m5.4xlarge
-      - ml.g6.xlarge
-      - ml.g6.2xlarge
-      - ml.g6.4xlarge
-      - ml.g6.8xlarge
-      - ml.g6.12xlarge
-      - ml.g6.16xlarge
+      - ml.m5.12xlarge
+      - ml.c5.large
+      - ml.c5.xlarge
+      - ml.c5.2xlarge
+      - ml.c5.4xlarge
+      - ml.g4dn.xlarge
+      - ml.g4dn.2xlarge
+      - ml.g4dn.4xlarge
+      - ml.g4dn.8xlarge
+      - ml.g5.xlarge
+      - ml.g5.2xlarge
+      - ml.g5.4xlarge
+      - ml.g5.8xlarge
+      - ml.g5.16xlarge
+      - ml.p3.2xlarge
+      - ml.p3.8xlarge
+      - ml.p3.16xlarge
     Description: 'Default instance type for Kernel Gateway (compute kernels) - users can choose this when creating notebooks'
   
   VpcCidr:
@@ -303,6 +318,11 @@ Resources:
                   - elasticfilesystem:DescribeMountTargets
                   - elasticfilesystem:DeleteMountTarget
                   - elasticfilesystem:DeleteFileSystem
+                  - s3:ListBucket
+                  - s3:ListBucketVersions
+                  - s3:DeleteObject
+                  - s3:DeleteObjectVersion
+                  - s3:DeleteBucket
                 Resource: '*'
 
   # Lambda Function for Cleanup
@@ -322,6 +342,133 @@ Resources:
           import time
           import cfnresponse
           
+          def wait_for_sagemaker_apps_deleted(sagemaker, domain_id, max_wait_time=600):
+              """Wait for all SageMaker apps to be deleted"""
+              print(f"Waiting for SageMaker apps in domain {domain_id} to be deleted...")
+              start_time = time.time()
+              
+              while time.time() - start_time < max_wait_time:
+                  try:
+                      apps = sagemaker.list_apps(DomainIdEquals=domain_id)
+                      active_apps = [app for app in apps.get('Apps', []) if app.get('Status') not in ['Deleted', 'Failed']]
+                      
+                      if not active_apps:
+                          print("All SageMaker apps have been deleted")
+                          return True
+                      
+                      print(f"Waiting for {len(active_apps)} apps to be deleted...")
+                      for app in active_apps:
+                          print(f"- {app.get('AppName', 'Unknown')} ({app.get('AppType', 'Unknown')}) - Status: {app.get('Status', 'Unknown')}")
+                      
+                      time.sleep(30)
+                  except Exception as e:
+                      print(f"Error checking app status: {e}")
+                      time.sleep(30)
+              
+              print(f"Timeout waiting for SageMaker apps to be deleted after {max_wait_time} seconds")
+              return False
+          
+          def wait_for_network_interfaces_detached(ec2, subnet_ids, max_wait_time=300):
+              """Wait for network interfaces to be detached and available for deletion"""
+              print("Waiting for network interfaces to be detached...")
+              start_time = time.time()
+              
+              while time.time() - start_time < max_wait_time:
+                  total_enis = 0
+                  attached_enis = 0
+                  
+                  for subnet_id in subnet_ids:
+                      try:
+                          response = ec2.describe_network_interfaces(
+                              Filters=[{'Name': 'subnet-id', 'Values': [subnet_id]}]
+                          )
+                          
+                          for eni in response.get('NetworkInterfaces', []):
+                              total_enis += 1
+                              attachment = eni.get('Attachment')
+                              if attachment and attachment.get('Status') in ['attached', 'attaching']:
+                                  attached_enis += 1
+                                  print(f"ENI {eni['NetworkInterfaceId']} still attached: {attachment}")
+                      except Exception as e:
+                          print(f"Error checking ENIs in subnet {subnet_id}: {e}")
+                  
+                  if attached_enis == 0:
+                      print(f"All {total_enis} network interfaces are now detached")
+                      return True
+                  
+                  print(f"Waiting for {attached_enis} of {total_enis} network interfaces to detach...")
+                  time.sleep(15)
+              
+              print(f"Timeout waiting for network interfaces to detach after {max_wait_time} seconds")
+              return False
+          
+          def delete_network_interfaces_with_retry(ec2, subnet_ids, max_attempts=5):
+              """Delete network interfaces with multiple retry attempts"""
+              print("Starting network interface cleanup with retries...")
+              
+              for attempt in range(max_attempts):
+                  print(f"Network interface deletion attempt {attempt + 1}/{max_attempts}")
+                  deleted_count = 0
+                  remaining_enis = []
+                  
+                  for subnet_id in subnet_ids:
+                      try:
+                          response = ec2.describe_network_interfaces(
+                              Filters=[{'Name': 'subnet-id', 'Values': [subnet_id]}]
+                          )
+                          
+                          for eni in response.get('NetworkInterfaces', []):
+                              eni_id = eni['NetworkInterfaceId']
+                              eni_status = eni.get('Status', 'unknown')
+                              eni_desc = eni.get('Description', 'N/A')
+                              
+                              print(f"Processing ENI {eni_id} - Status: {eni_status}, Description: {eni_desc}")
+                              
+                              # Skip if attached to EC2 instance
+                              attachment = eni.get('Attachment')
+                              if attachment and attachment.get('InstanceId'):
+                                  print(f"ENI {eni_id} attached to EC2 instance {attachment['InstanceId']}, skipping")
+                                  continue
+                              
+                              # Force detach if still attached
+                              if attachment and attachment.get('Status') in ['attached', 'attaching']:
+                                  attachment_id = attachment.get('AttachmentId')
+                                  if attachment_id:
+                                      try:
+                                          print(f"Force detaching ENI {eni_id} (attachment: {attachment_id})")
+                                          ec2.detach_network_interface(
+                                              AttachmentId=attachment_id,
+                                              Force=True
+                                          )
+                                          time.sleep(5)  # Brief wait after detach
+                                      except Exception as detach_error:
+                                          print(f"Error detaching ENI {eni_id}: {detach_error}")
+                              
+                              # Attempt to delete the ENI
+                              try:
+                                  ec2.delete_network_interface(NetworkInterfaceId=eni_id)
+                                  print(f"Successfully deleted ENI {eni_id}")
+                                  deleted_count += 1
+                              except Exception as delete_error:
+                                  print(f"Error deleting ENI {eni_id}: {delete_error}")
+                                  remaining_enis.append(eni_id)
+                      
+                      except Exception as e:
+                          print(f"Error processing subnet {subnet_id}: {e}")
+                  
+                  print(f"Attempt {attempt + 1}: Deleted {deleted_count} ENIs, {len(remaining_enis)} remaining")
+                  
+                  if not remaining_enis:
+                      print("All network interfaces deleted successfully")
+                      return True
+                  
+                  if attempt < max_attempts - 1:
+                      print(f"Waiting 30 seconds before retry...")
+                      time.sleep(30)
+              
+              print(f"Failed to delete {len(remaining_enis)} network interfaces after {max_attempts} attempts")
+              return False
+          
           def lambda_handler(event, context):
               try:
                   print(f"Event: {json.dumps(event)}")
@@ -331,42 +478,92 @@ Resources:
                       sagemaker = boto3.client('sagemaker')
                       efs = boto3.client('efs')
                       
-                      # Get subnet IDs from event
+                      # Get parameters from event
                       subnet_ids = event['ResourceProperties'].get('SubnetIds', [])
                       domain_id = event['ResourceProperties'].get('DomainId', '')
                       vpc_id = event['ResourceProperties'].get('VpcId', '')
+                      s3_bucket_name = event['ResourceProperties'].get('S3BucketName', '')
                       
                       print(f"Cleaning up subnets: {subnet_ids}")
                       print(f"Domain ID: {domain_id}")
                       print(f"VPC ID: {vpc_id}")
+                      print(f"S3 Bucket: {s3_bucket_name}")
                       
-                      # Delete SageMaker Apps first
+                      # Step 1: Delete SageMaker Apps and wait for completion
                       if domain_id:
                           try:
+                              print("Step 1: Deleting SageMaker Apps...")
                               apps = sagemaker.list_apps(DomainIdEquals=domain_id)
                               for app in apps.get('Apps', []):
-                                  print(f"Deleting app: {app}")
-                                  sagemaker.delete_app(
-                                      DomainId=app['DomainId'],
-                                      UserProfileName=app.get('UserProfileName'),
-                                      SpaceName=app.get('SpaceName'),
-                                      AppType=app['AppType'],
-                                      AppName=app['AppName']
-                                  )
+                                  if app.get('Status') not in ['Deleted', 'Failed']:
+                                      print(f"Deleting app: {app.get('AppName', 'Unknown')} ({app.get('AppType', 'Unknown')})")
+                                      try:
+                                          sagemaker.delete_app(
+                                              DomainId=app['DomainId'],
+                                              UserProfileName=app.get('UserProfileName'),
+                                              SpaceName=app.get('SpaceName'),
+                                              AppType=app['AppType'],
+                                              AppName=app['AppName']
+                                          )
+                                      except Exception as app_error:
+                                          print(f"Error deleting app {app.get('AppName', 'Unknown')}: {app_error}")
                               
-                              # Wait for apps to be deleted
-                              time.sleep(30)
+                              # Wait for all apps to be deleted
+                              wait_for_sagemaker_apps_deleted(sagemaker, domain_id)
+                              
                           except Exception as e:
-                              print(f"Error deleting SageMaker apps: {e}")
+                              print(f"Error in SageMaker app cleanup: {e}")
                       
-                      # Delete EFS Mount Targets in subnets
+                      # Step 2: Clean up S3 Bucket
+                      if s3_bucket_name:
+                          try:
+                              print("Step 2: Cleaning up S3 Bucket...")
+                              s3 = boto3.client('s3')
+                              
+                              # Delete all objects in the bucket
+                              print(f"Deleting all objects from bucket {s3_bucket_name}")
+                              
+                              # List and delete all object versions
+                              paginator = s3.get_paginator('list_object_versions')
+                              for page in paginator.paginate(Bucket=s3_bucket_name):
+                                  delete_list = []
+                                  
+                                  # Add current versions
+                                  if 'Versions' in page:
+                                      for version in page['Versions']:
+                                          delete_list.append({
+                                              'Key': version['Key'],
+                                              'VersionId': version['VersionId']
+                                          })
+                                  
+                                  # Add delete markers
+                                  if 'DeleteMarkers' in page:
+                                      for marker in page['DeleteMarkers']:
+                                          delete_list.append({
+                                              'Key': marker['Key'],
+                                              'VersionId': marker['VersionId']
+                                          })
+                                  
+                                  # Delete objects in batches
+                                  if delete_list:
+                                      print(f"Deleting {len(delete_list)} objects/versions")
+                                      s3.delete_objects(
+                                          Bucket=s3_bucket_name,
+                                          Delete={'Objects': delete_list}
+                                      )
+                              
+                              print(f"All objects deleted from bucket {s3_bucket_name}")
+                              
+                          except Exception as e:
+                              print(f"Error cleaning up S3 bucket: {e}")
+                      
+                      # Step 3: Delete EFS Mount Targets
+                      print("Step 3: Cleaning up EFS Mount Targets...")
                       efs_to_delete = []
                       for subnet_id in subnet_ids:
                           try:
                               print(f"Checking EFS mount targets in subnet {subnet_id}")
-                              # Find EFS mount targets in subnet
                               filesystems = efs.describe_file_systems()
-                              print(f"Found {len(filesystems['FileSystems'])} EFS filesystems")
                               
                               for filesystem in filesystems['FileSystems']:
                                   fs_id = filesystem['FileSystemId']
@@ -375,10 +572,10 @@ Resources:
                                       
                                       for mt in mount_targets['MountTargets']:
                                           if mt['SubnetId'] == subnet_id:
-                                              print(f"Deleting EFS mount target {mt['MountTargetId']} for filesystem {fs_id} in subnet {subnet_id}")
-                                              efs.delete_mount_target(MountTargetId=mt['MountTargetId'])
+                                              mt_id = mt['MountTargetId']
+                                              print(f"Deleting EFS mount target {mt_id} for filesystem {fs_id} in subnet {subnet_id}")
+                                              efs.delete_mount_target(MountTargetId=mt_id)
                                               
-                                              # Track filesystems that may need deletion
                                               if fs_id not in efs_to_delete:
                                                   efs_to_delete.append(fs_id)
                                   except Exception as mt_error:
@@ -387,12 +584,11 @@ Resources:
                           except Exception as e:
                               print(f"Error cleaning up EFS in subnet {subnet_id}: {e}")
                       
-                      # Wait for mount targets to be deleted
+                      # Wait for EFS mount targets to be deleted
                       if efs_to_delete:
-                          print(f"Waiting 90 seconds for {len(efs_to_delete)} EFS mount targets to be deleted...")
-                          time.sleep(90)
+                          print(f"Waiting 120 seconds for {len(efs_to_delete)} EFS mount targets to be deleted...")
+                          time.sleep(120)
                           
-                          # Check if filesystems can be deleted
                           for fs_id in efs_to_delete:
                               try:
                                   remaining_mts = efs.describe_mount_targets(FileSystemId=fs_id)
@@ -404,151 +600,56 @@ Resources:
                               except Exception as e:
                                   print(f"Error deleting EFS filesystem {fs_id}: {e}")
                       
-                      # Delete network interfaces in subnets
-                      for subnet_id in subnet_ids:
-                          try:
-                              # Find network interfaces in subnet
-                              response = ec2.describe_network_interfaces(
-                                  Filters=[{'Name': 'subnet-id', 'Values': [subnet_id]}]
-                              )
-                              
-                              for eni in response.get('NetworkInterfaces', []):
-                                  eni_id = eni['NetworkInterfaceId']
-                                  print(f"Found ENI {eni_id} in subnet {subnet_id}")
-                                  print(f"ENI Status: {eni.get('Status')}")
-                                  print(f"ENI Description: {eni.get('Description', 'N/A')}")
-                                  
-                                  # Check if ENI has attachment
-                                  attachment = eni.get('Attachment')
-                                  if attachment:
-                                      print(f"ENI {eni_id} has attachment: {attachment}")
-                                      attachment_id = attachment.get('AttachmentId')
-                                      instance_id = attachment.get('InstanceId')
-                                      
-                                      # Skip if attached to EC2 instance (we can't control those)
-                                      if instance_id:
-                                          print(f"ENI {eni_id} attached to EC2 instance {instance_id}, skipping")
-                                          continue
-                                      
-                                      # Try to detach if it's attached to other AWS services
-                                      if attachment_id and not attachment.get('DeleteOnTermination', False):
-                                          try:
-                                              print(f"Detaching ENI {eni_id} (attachment: {attachment_id})")
-                                              ec2.detach_network_interface(
-                                                  AttachmentId=attachment_id,
-                                                  Force=True
-                                              )
-                                              print(f"Detached ENI {eni_id}")
-                                              # Wait a bit for detachment to complete
-                                              time.sleep(10)
-                                          except Exception as detach_error:
-                                              print(f"Error detaching ENI {eni_id}: {detach_error}")
-                                              continue
-                                  
-                                  # Delete the ENI
-                                  try:
-                                      # Wait a bit more to ensure detachment is complete
-                                      time.sleep(5)
-                                      ec2.delete_network_interface(NetworkInterfaceId=eni_id)
-                                      print(f"Deleted ENI {eni_id}")
-                                  except Exception as e:
-                                      print(f"Error deleting ENI {eni_id}: {e}")
-                                      # If it's still in use, try force detach one more time
-                                      if "currently in use" in str(e):
-                                          try:
-                                              print(f"Attempting force detach for ENI {eni_id}")
-                                              # Get current attachment info
-                                              current_eni = ec2.describe_network_interfaces(NetworkInterfaceIds=[eni_id])
-                                              current_attachment = current_eni['NetworkInterfaces'][0].get('Attachment')
-                                              if current_attachment:
-                                                  ec2.detach_network_interface(
-                                                      AttachmentId=current_attachment['AttachmentId'],
-                                                      Force=True
-                                                  )
-                                                  time.sleep(15)  # Wait longer
-                                                  ec2.delete_network_interface(NetworkInterfaceId=eni_id)
-                                                  print(f"Force deleted ENI {eni_id}")
-                                          except Exception as force_error:
-                                              print(f"Force delete also failed for ENI {eni_id}: {force_error}")
-                                      
-                          except Exception as e:
-                              print(f"Error processing subnet {subnet_id}: {e}")
+                      # Step 4: Wait for network interfaces to be detached
+                      print("Step 4: Waiting for network interfaces to detach...")
+                      wait_for_network_interfaces_detached(ec2, subnet_ids)
                       
-                      # Clean up VPC dependencies
+                      # Step 5: Delete network interfaces with retries
+                      print("Step 5: Deleting network interfaces...")
+                      delete_network_interfaces_with_retry(ec2, subnet_ids)
+                      
+                      # Step 6: Clean up VPC dependencies
                       if vpc_id:
+                          print("Step 6: Cleaning up VPC dependencies...")
                           try:
-                              # Step 1: Remove all security group rules first (to break circular dependencies)
-                              print("Step 1: Removing all security group rules to break dependencies")
+                              # Clean up security groups
+                              print("Cleaning up security groups...")
                               security_groups = ec2.describe_security_groups(
                                   Filters=[{'Name': 'vpc-id', 'Values': [vpc_id]}]
                               )
                               
                               non_default_sgs = [sg for sg in security_groups['SecurityGroups'] if sg['GroupName'] != 'default']
-                              print(f"Found {len(non_default_sgs)} non-default security groups")
                               
-                              # Remove all rules from all security groups first
+                              # Remove all rules first
                               for sg in non_default_sgs:
                                   sg_id = sg['GroupId']
-                                  print(f"Removing rules from security group {sg_id} ({sg.get('GroupName', 'unnamed')})")
-                                  
                                   try:
-                                      # Remove all ingress rules
                                       if sg.get('IpPermissions'):
-                                          print(f"Removing {len(sg['IpPermissions'])} ingress rules from {sg_id}")
                                           ec2.revoke_security_group_ingress(
                                               GroupId=sg_id,
                                               IpPermissions=sg['IpPermissions']
                                           )
-                                      
-                                      # Remove all egress rules (except the default allow-all rule)
                                       if sg.get('IpPermissionsEgress'):
-                                          print(f"Removing {len(sg['IpPermissionsEgress'])} egress rules from {sg_id}")
                                           ec2.revoke_security_group_egress(
                                               GroupId=sg_id,
                                               IpPermissions=sg['IpPermissionsEgress']
                                           )
-                                      
-                                      print(f"Removed all rules from security group {sg_id}")
                                   except Exception as rule_error:
                                       print(f"Error removing rules from security group {sg_id}: {rule_error}")
                               
-                              # Wait for rule changes to propagate
-                              print("Waiting 30 seconds for rule changes to propagate...")
-                              time.sleep(30)
+                              time.sleep(30)  # Wait for rule changes to propagate
                               
-                              # Step 2: Delete security groups (multiple attempts for dependencies)
-                              print("Step 2: Deleting security groups")
-                              max_attempts = 3
-                              for attempt in range(max_attempts):
-                                  print(f"Security group deletion attempt {attempt + 1}")
-                                  remaining_sgs = []
-                                  
-                                  # Get fresh list of security groups
-                                  security_groups = ec2.describe_security_groups(
-                                      Filters=[{'Name': 'vpc-id', 'Values': [vpc_id]}]
-                                  )
-                                  
-                                  for sg in security_groups['SecurityGroups']:
-                                      if sg['GroupName'] != 'default':
-                                          sg_id = sg['GroupId']
-                                          try:
-                                              ec2.delete_security_group(GroupId=sg_id)
-                                              print(f"Deleted security group {sg_id}")
-                                          except Exception as delete_error:
-                                              print(f"Could not delete security group {sg_id}: {delete_error}")
-                                              remaining_sgs.append(sg_id)
-                                  
-                                  if not remaining_sgs:
-                                      print("All security groups deleted successfully")
-                                      break
-                                  else:
-                                      print(f"{len(remaining_sgs)} security groups remaining: {remaining_sgs}")
-                                      if attempt < max_attempts - 1:
-                                          print("Waiting 20 seconds before retry...")
-                                          time.sleep(20)
+                              # Delete security groups
+                              for sg in non_default_sgs:
+                                  sg_id = sg['GroupId']
+                                  try:
+                                      ec2.delete_security_group(GroupId=sg_id)
+                                      print(f"Deleted security group {sg_id}")
+                                  except Exception as delete_error:
+                                      print(f"Could not delete security group {sg_id}: {delete_error}")
                               
-                              # Step 3: Clean up NAT Gateways
-                              print("Step 3: Cleaning up NAT Gateways")
+                              # Clean up NAT Gateways
+                              print("Cleaning up NAT Gateways...")
                               nat_gateways = ec2.describe_nat_gateways(
                                   Filters=[{'Name': 'vpc-id', 'Values': [vpc_id]}]
                               )
@@ -556,23 +657,72 @@ Resources:
                               for nat in nat_gateways['NatGateways']:
                                   if nat['State'] not in ['deleted', 'deleting']:
                                       nat_id = nat['NatGatewayId']
-                                      print(f"Deleting NAT Gateway {nat_id}")
                                       try:
                                           ec2.delete_nat_gateway(NatGatewayId=nat_id)
                                           print(f"Initiated deletion of NAT Gateway {nat_id}")
                                       except Exception as nat_error:
                                           print(f"Error deleting NAT Gateway {nat_id}: {nat_error}")
-                              
-                              print("VPC dependency cleanup completed")
-                              
+                                          
                           except Exception as e:
                               print(f"Error cleaning up VPC dependencies: {e}")
+                      
+                      print("Cleanup completed successfully")
                   
                   cfnresponse.send(event, context, cfnresponse.SUCCESS, {})
                   
               except Exception as e:
                   print(f"Error in cleanup function: {e}")
+                  import traceback
+                  traceback.print_exc()
                   cfnresponse.send(event, context, cfnresponse.FAILED, {})
+
+  # IAM Role for Bedrock Model Import
+  BedrockImportRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${AWS::StackName}-BedrockImportRole'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: bedrock.amazonaws.com
+            Action: sts:AssumeRole
+            Condition:
+              StringEquals:
+                'aws:SourceAccount': !Ref 'AWS::AccountId'
+              ArnEquals:
+                'aws:SourceArn': !Sub 'arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:model-import-job/*'
+      Policies:
+        - PolicyName: BedrockImportS3Access
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:GetObjectVersion
+                  - s3:ListBucket
+                  - s3:PutObject
+                  - s3:PutObjectAcl
+                Resource:
+                  - !GetAtt WorkshopS3Bucket.Arn
+                  - !Sub '${WorkshopS3Bucket.Arn}/*'
+        - PolicyName: BedrockImportLogging
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/bedrock/*'
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-BedrockImportRole'
+        - Key: Purpose
+          Value: 'Bedrock Model Import Jobs'
 
   # IAM Role for SageMaker Execution
   SageMakerExecutionRole:
@@ -592,7 +742,7 @@ Resources:
         - arn:aws:iam::aws:policy/AmazonSageMakerFullAccess
         - arn:aws:iam::aws:policy/AmazonBedrockFullAccess
       Policies:
-        - PolicyName: S3ReadAccess
+        - PolicyName: S3WorkshopBucketFullAccess
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
@@ -602,9 +752,60 @@ Resources:
                   - s3:GetObjectVersion
                   - s3:ListBucket
                   - s3:ListBucketVersions
+                  - s3:PutObject
+                  - s3:PutObjectAcl
+                  - s3:DeleteObject
+                  - s3:GetBucketLocation
+                  - s3:GetBucketVersioning
+                  - s3:GetBucketNotification
+                  - s3:PutBucketNotification
+                  - s3:GetBucketTagging
+                  - s3:PutBucketTagging
                 Resource:
-                  - 'arn:aws:s3:::*'
-                  - 'arn:aws:s3:::*/*'
+                  - !GetAtt WorkshopS3Bucket.Arn
+                  - !Sub '${WorkshopS3Bucket.Arn}/*'
+              - Effect: Allow
+                Action:
+                  - s3:ListAllMyBuckets
+                  - s3:GetBucketLocation
+                Resource: '*'
+        - PolicyName: BedrockModelImportPermissions
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - bedrock:CreateModelImportJob
+                  - bedrock:GetModelImportJob
+                  - bedrock:ListModelImportJobs
+                  - bedrock:CreateModelCustomizationJob
+                  - bedrock:GetModelCustomizationJob
+                  - bedrock:ListModelCustomizationJobs
+                  - bedrock:StopModelCustomizationJob
+                  - bedrock:CreateProvisionedModelThroughput
+                  - bedrock:GetProvisionedModelThroughput
+                  - bedrock:ListProvisionedModelThroughputs
+                  - bedrock:DeleteProvisionedModelThroughput
+                  - bedrock:UpdateProvisionedModelThroughput
+                  - bedrock:TagResource
+                  - bedrock:UntagResource
+                  - bedrock:ListTagsForResource
+                  - bedrock:GetFoundationModel
+                  - bedrock:ListFoundationModels
+                  - bedrock:InvokeModel
+                  - bedrock:InvokeModelWithResponseStream
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - iam:PassRole
+                Resource: 
+                  - !Sub 'arn:aws:iam::${AWS::AccountId}:role/${AWS::StackName}-SageMakerExecutionRole'
+                  - !GetAtt BedrockImportRole.Arn
+                Condition:
+                  StringEquals:
+                    'iam:PassedToService':
+                      - bedrock.amazonaws.com
+                      - sagemaker.amazonaws.com
         - PolicyName: AdditionalPermissions
           PolicyDocument:
             Version: '2012-10-17'
@@ -615,6 +816,7 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                   - logs:DescribeLogStreams
+                  - logs:DescribeLogGroups
                 Resource: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*'
               - Effect: Allow
                 Action:
@@ -626,6 +828,12 @@ Resources:
                   - ec2:DescribeVpcs
                   - ec2:DescribeSubnets
                   - ec2:DescribeSecurityGroups
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - kms:Decrypt
+                  - kms:DescribeKey
+                  - kms:GenerateDataKey
                 Resource: '*'
 
   # Security Group for SageMaker Studio
@@ -723,7 +931,7 @@ Resources:
         - Key: Purpose
           Value: 'MCP Workshop User'
 
-  # JupyterLab Space for ml.m5.4xlarge with 100GB storage
+  # JupyterLab Space for ml.g5.8xlarge with 100GB storage
   JupyterLabSpace:
     Type: AWS::SageMaker::Space
     DeletionPolicy: Delete
@@ -740,7 +948,7 @@ Resources:
         AppType: 'JupyterLab'
         JupyterLabAppSettings:
           DefaultResourceSpec:
-            InstanceType: 'ml.g6.8xlarge'
+            InstanceType: 'ml.g5.8xlarge'
             SageMakerImageArn: !FindInMap [SageMakerImageArn, !Ref 'AWS::Region', JupyterLab]
         SpaceStorageSettings:
           EbsStorageSettings:
@@ -751,6 +959,37 @@ Resources:
         - Key: Purpose
           Value: 'MCP Workshop JupyterLab Environment'
 
+  # S3 Bucket for SageMaker and Bedrock
+  WorkshopS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${AWS::StackName}-workshop-bucket-${AWS::AccountId}'
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteIncompleteMultipartUploads
+            Status: Enabled
+            AbortIncompleteMultipartUpload:
+              DaysAfterInitiation: 7
+          - Id: DeleteOldVersions
+            Status: Enabled
+            NoncurrentVersionExpirationInDays: 30
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-Workshop-Bucket'
+        - Key: Purpose
+          Value: 'SageMaker and Bedrock Workshop Storage'
+
   # Custom Resource to trigger cleanup on stack deletion
   CleanupResource:
     Type: AWS::CloudFormation::CustomResource
@@ -760,6 +999,7 @@ Resources:
       - SageMakerUserProfile
       - SageMakerStudioDomain
       - CleanupLambdaFunction
+      - WorkshopS3Bucket
     Properties:
       ServiceToken: !GetAtt CleanupLambdaFunction.Arn
       SubnetIds: !If 
@@ -768,6 +1008,7 @@ Resources:
         - !Ref ExistingSubnetIds
       DomainId: !Ref SageMakerStudioDomain
       VpcId: !If [CreateVpc, !Ref WorkshopVPC, !Ref ExistingVpcId]
+      S3BucketName: !Ref WorkshopS3Bucket
 
 
 Outputs:
@@ -801,6 +1042,12 @@ Outputs:
     Export:
       Name: !Sub '${AWS::StackName}-ExecutionRole'
 
+  BedrockImportRoleArn:
+    Description: 'Bedrock Model Import Role ARN'
+    Value: !GetAtt BedrockImportRole.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-BedrockImportRole'
+
   StudioUrl:
     Description: 'SageMaker Studio URL'
     Value: !Sub 'https://${SageMakerStudioDomain}.studio.${AWS::Region}.sagemaker.aws/jupyter/default/lab'
@@ -814,6 +1061,18 @@ Outputs:
     Value: !Ref SageMakerStudioSecurityGroup
     Export:
       Name: !Sub '${AWS::StackName}-SecurityGroup'
+
+  WorkshopS3BucketName:
+    Description: 'S3 Bucket for SageMaker and Bedrock Workshop'
+    Value: !Ref WorkshopS3Bucket
+    Export:
+      Name: !Sub '${AWS::StackName}-WorkshopBucket'
+
+  WorkshopS3BucketArn:
+    Description: 'S3 Bucket ARN for SageMaker and Bedrock Workshop'
+    Value: !GetAtt WorkshopS3Bucket.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-WorkshopBucketArn'
 
   # VPC-related outputs (only shown if VPC was created)
   VpcId:
@@ -861,11 +1120,13 @@ Outputs:
     Value: |
       1. Navigate to the SageMaker Console URL provided above
       2. Select your user profile (workshop-user) and click 'Launch' -> 'Studio'
-      3. A pre-configured JupyterLab space (jupyterlab-workspace) with ml.g6.8xlarge and 100GB storage is available
+      3. A pre-configured JupyterLab space (jupyterlab-workspace) with ml.m5.4xlarge and 100GB storage is available
       4. Click on the 'jupyterlab-workspace' space and select 'Run space' to launch JupyterLab
-      5. Alternatively, create new notebooks with your preferred instance type (default: ml.g6.8xlarge)
+      5. Alternatively, create new notebooks with your preferred instance type (default: ml.g5.8xlarge)
       6. Storage is configured with 100GB default, expandable to 200GB
-      7. Upload your Mistral workshop notebook and begin!
+      7. For Bedrock Model Import: Use the BedrockImportRoleArn from outputs
+      8. S3 Bucket for model artifacts: Use WorkshopS3BucketName from outputs
+      9. Upload your Mistral workshop notebook and begin!
 
 Metadata:
   AWS::CloudFormation::Interface:
