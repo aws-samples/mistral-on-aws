@@ -31,7 +31,7 @@ Request the following quota increases in **us-west-2** region:
 📝 **How to request quota increases:**
 1. Go to AWS Service Quotas console
 2. Search for "Amazon SageMaker"
-3. Find the specific quota (e.g., "ml.g6.8xlarge for endpoint usage")
+3. Find the specific quota (e.g., "ml.g6.4xlarge for endpoint usage")
 4. Click "Request quota increase"
 5. Set the new quota value and submit
 
