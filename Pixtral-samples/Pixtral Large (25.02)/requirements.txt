@@ -37,7 +37,7 @@ jmespath==1.0.1
 jsonschema==4.23.0
 jsonschema-specifications==2024.10.1
 jupyter_client==8.6.3
-jupyter_core==5.7.2
+jupyter_core==5.8.1
 jupyterlab_widgets==3.0.13
 kiwisolver==1.4.8
 markdown-it-py==3.0.0
