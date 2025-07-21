@@ -44,7 +44,7 @@ markdown-it-py==3.0.0
 MarkupSafe==3.0.2
 matplotlib==3.10.1
 matplotlib-inline==0.1.7
-mcp==1.9.4
+mcp==1.10.0
 mdurl==0.1.2
 mistral_common==1.5.4
 mistralai==0.0.12
