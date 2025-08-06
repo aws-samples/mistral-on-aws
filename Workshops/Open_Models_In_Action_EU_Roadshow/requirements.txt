@@ -13,7 +13,7 @@ mcp_weather_server
 accelerate>=1.6.0
 torch 
 bitsandbytes 
-transformers==4.52.1 
+transformers==4.53.0 
 peft 
 datasets
 tensorboardX
