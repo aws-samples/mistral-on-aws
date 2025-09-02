@@ -10,6 +10,7 @@ import base64
 import tempfile
 import re
 import uuid
+import random
 from typing import Any, Dict, List, Optional, Union
 
 import torch
@@ -162,12 +163,36 @@ def parse_voxtral_tool_calls(text: str) -> Optional[List[Dict[str, Any]]]:
     Parse Voxtral's native [TOOL_CALLS] format and convert to OpenAI format
     """
     try:
-        # Look for [TOOL_CALLS] pattern
-        tool_calls_pattern = r'\[TOOL_CALLS\]\[(.*?)\]'
-        matches = re.findall(tool_calls_pattern, text, re.DOTALL)
+        # Look for [TOOL_CALLS] or [tool_calls] pattern (case insensitive)
+        # Extract everything between the brackets after [tool_calls]
+        tool_calls_pattern = r'\[(?:TOOL_CALLS|tool_calls)\]\[(.+?)\](?=\s*$|\s*\w)'
+        matches = re.findall(tool_calls_pattern, text, re.DOTALL | re.IGNORECASE)
+        
+        # If that doesn't work, try a simpler approach
+        if not matches:
+            # Find [tool_calls] and extract everything up to the matching closing bracket
+            start_pattern = r'\[(?:TOOL_CALLS|tool_calls)\]\['
+            match_start = re.search(start_pattern, text, re.IGNORECASE)
+            if match_start:
+                start_pos = match_start.end()
+                # Find the matching closing bracket by counting brackets
+                bracket_count = 1
+                i = start_pos
+                while i < len(text) and bracket_count > 0:
+                    if text[i] == '[':
+                        bracket_count += 1
+                    elif text[i] == ']':
+                        bracket_count -= 1
+                    i += 1
+                if bracket_count == 0:
+                    json_content = text[start_pos:i-1]
+                    matches = [json_content]
         
         if not matches:
+            logger.info(f"No tool call patterns found in text: {text[:200]}...")
             return None
+        
+        logger.info(f"Found {len(matches)} potential tool call matches: {matches}")
         
         tool_calls = []
         for match in matches:
@@ -180,9 +205,11 @@ def parse_voxtral_tool_calls(text: str) -> Optional[List[Dict[str, Any]]]:
                     tool_call_data = [tool_call_data]
                 
                 for tool_data in tool_call_data:
-                    # Convert to OpenAI format
+                    # Convert to OpenAI format with strands-compatible ID
+                    # Strands requires: a-z, A-Z, 0-9, length of 9 
+                    tool_call_id = ''.join(random.choices('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', k=9))
                     openai_tool_call = {
-                        "id": f"call_{uuid.uuid4().hex[:8]}",
+                        "id": tool_call_id,
                         "type": "function",
                         "function": {
                             "name": tool_data.get("name", ""),
@@ -208,8 +235,8 @@ def parse_voxtral_tool_calls(text: str) -> Optional[List[Dict[str, Any]]]:
 def clean_voxtral_tool_calls_from_text(text: str) -> str:
     """Remove [TOOL_CALLS] markers from the generated text"""
     try:
-        # Remove [TOOL_CALLS][...] patterns
-        cleaned_text = re.sub(r'\[TOOL_CALLS\]\[.*?\]', '', text, flags=re.DOTALL)
+        # Remove [TOOL_CALLS][...] or [tool_calls][...] patterns (case insensitive)
+        cleaned_text = re.sub(r'\[(?:TOOL_CALLS|tool_calls)\]\[.*?\]', '', text, flags=re.DOTALL | re.IGNORECASE)
         
         # Clean up any extra whitespace
         cleaned_text = cleaned_text.strip()
@@ -279,7 +306,7 @@ def process_audio_content(audio_item: Dict[str, Any]) -> Any:
         return None
 
 def format_messages_for_voxtral(messages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """Format messages using mistral_common"""
+    """Format messages using mistral_common with proper tool message handling"""
     try:
         from mistral_common.protocol.instruct.messages import TextChunk, AudioChunk, UserMessage, AssistantMessage
         
@@ -289,12 +316,47 @@ def format_messages_for_voxtral(messages: List[Dict[str, Any]]) -> List[Dict[str
             role = message.get("role", "user")
             content = message.get("content", "")
             
+            # Handle tool messages specially - preserve their structure
+            if role == "tool":
+                # Extract tool name from the strands agent context
+                tool_name = message.get("name", "unknown_tool")
+                tool_call_id = message.get("tool_call_id", "unknown")
+                
+                # Try to infer tool name from recent tool calls if not provided
+                if tool_name == "unknown_tool" and len(formatted_messages) > 0:
+                    # Look backwards for the most recent assistant message with tool calls
+                    for prev_msg in reversed(formatted_messages):
+                        if (prev_msg.get("role") == "assistant" and 
+                            "tool_calls" in prev_msg and 
+                            prev_msg["tool_calls"]):
+                            # Use the name of the last tool call
+                            tool_name = prev_msg["tool_calls"][-1]["function"]["name"]
+                            break
+                
+                tool_message = {
+                    "role": "tool",
+                    "content": content,
+                    "tool_call_id": tool_call_id,
+                    "name": tool_name
+                }
+                formatted_messages.append(tool_message)
+                continue
+            
+            # Handle assistant messages with tool calls - preserve them exactly
+            if role == "assistant" and "tool_calls" in message:
+                formatted_messages.append(message)
+                continue
+            
             if isinstance(content, str):
                 # Simple text message
                 if role == "user":
                     msg = UserMessage(content=[TextChunk(text=content)])
-                else:
+                elif role == "assistant":
                     msg = AssistantMessage(content=content)
+                else:
+                    # Handle other roles directly (like system)
+                    formatted_messages.append(message)
+                    continue
                 formatted_messages.append(msg.to_openai())
                 
             elif isinstance(content, list):
@@ -316,27 +378,96 @@ def format_messages_for_voxtral(messages: List[Dict[str, Any]]) -> List[Dict[str
                                 logger.warning("Audio processing failed, skipping")
                                 continue
                 
-                if chunks and role == "user":
-                    msg = UserMessage(content=chunks)
-                    formatted_messages.append(msg.to_openai())
+                if chunks:
+                    if role == "user":
+                        msg = UserMessage(content=chunks)
+                        formatted_messages.append(msg.to_openai())
+                    elif role == "assistant":
+                        # Convert multimodal assistant content to text
+                        text_content = " ".join([chunk.text for chunk in chunks if hasattr(chunk, 'text')])
+                        msg = AssistantMessage(content=text_content)
+                        formatted_messages.append(msg.to_openai())
                     
             else:
                 # Fallback
                 if role == "user":
                     msg = UserMessage(content=[TextChunk(text=str(content))])
-                else:
+                elif role == "assistant":
                     msg = AssistantMessage(content=str(content))
+                else:
+                    # Handle other roles directly
+                    formatted_messages.append(message)
+                    continue
                 formatted_messages.append(msg.to_openai())
         
         return formatted_messages
         
     except Exception as e:
         logger.error(f"Error formatting messages: {e}")
-        return messages
+        # Enhanced fallback that preserves tool message structure
+        formatted_messages = []
+        for message in messages:
+            if message.get("role") == "tool":
+                # Ensure tool messages have proper name attribution
+                tool_message = dict(message)
+                if "name" not in tool_message or tool_message["name"] in ["unknown", "unknown_tool"]:
+                    # Try to infer from previous tool calls or use default
+                    tool_message["name"] = "tool_response"
+                formatted_messages.append(tool_message)
+            else:
+                formatted_messages.append(message)
+        return formatted_messages
 
+
+def detect_pending_tool_responses(messages: List[Dict[str, Any]]) -> bool:
+    """Check if the LATEST messages contain tool responses that need immediate processing"""
+    # Look for the pattern: assistant with tool_calls followed by tool responses
+    # Only return True if we have recent tool responses that haven't been processed yet
+    
+    tool_responses_found = []
+    assistant_tool_calls_found = []
+    
+    # Check the last few messages for the tool call -> tool response pattern
+    for i, msg in enumerate(messages):
+        role = msg.get("role")
+        if role == "tool":
+            tool_responses_found.append(f"msg[{i}]: role={role}, name={msg.get('name', 'unknown')}")
+        elif role == "assistant" and "tool_calls" in msg:
+            assistant_tool_calls_found.append(f"msg[{i}]: assistant with tool_calls")
+    
+    # Only consider it a "pending tool response" if:
+    # 1. We have tool responses AND
+    # 2. The last assistant message has tool_calls (indicating incomplete conversation)
+    # OR the last message is a tool response (needs processing)
+    
+    if not tool_responses_found:
+        logger.info("🔧 No tool responses found in conversation history")
+        return False
+    
+    last_msg = messages[-1] if messages else {}
+    last_role = last_msg.get("role")
+    
+    # If the last message is a tool response, we need to process it
+    if last_role == "tool":
+        logger.info(f"🔧 Last message is tool response - needs processing: {tool_responses_found}")
+        return True
+    
+    # If the last message is assistant, check if it has unprocessed tool responses before it
+    if last_role == "assistant":
+        # Look backwards to see if there are unprocessed tool responses
+        for i in range(len(messages) - 2, -1, -1):  # Start from second-to-last message
+            msg_role = messages[i].get("role")
+            if msg_role == "tool":
+                logger.info(f"🔧 Found unprocessed tool responses before final assistant message: {tool_responses_found}")
+                return True
+            elif msg_role == "assistant":
+                break  # Stop at previous assistant message
+    
+    logger.info(f"🔧 Tool responses found but not pending processing: {tool_responses_found}")
+    return False
 
 def generate_response(request_data: Dict[str, Any]) -> Dict[str, Any]:
-    """Generate response using direct vLLM engine with proper tool call parsing"""
+    """Generate response using direct vLLM engine with proper tool call parsing and multi-turn support"""
     global model_engine, model_config
     
     if not model_loaded or model_engine is None:
@@ -356,13 +487,24 @@ def generate_response(request_data: Dict[str, Any]) -> Dict[str, Any]:
         else:
             raise HTTPException(status_code=400, detail="Invalid input format")
         
+        # Log incoming messages for debugging
+        logger.info(f"📥 Raw messages received: {len(raw_messages)} messages")
+        for i, msg in enumerate(raw_messages):
+            role = msg.get("role", "unknown")
+            content_preview = str(msg.get("content", ""))[:100] + "..." if len(str(msg.get("content", ""))) > 100 else str(msg.get("content", ""))
+            logger.info(f"  msg[{i}]: role={role}, content_preview={content_preview}")
+        
+        # Check if this is a follow-up after tool execution
+        has_tool_responses = detect_pending_tool_responses(raw_messages)
+        
         # Process messages with voxtral formatting
         messages = format_messages_for_voxtral(raw_messages)
         
-        # Extract parameters
+        # Extract parameters with enhanced defaults for tool response processing
         temperature = request_data.get("temperature", 0.2)
         top_p = request_data.get("top_p", 0.95)
-        max_tokens = request_data.get("max_tokens", 512)
+        default_max_tokens = 1024 if has_tool_responses else 512  # More tokens for tool response synthesis
+        max_tokens = request_data.get("max_tokens", default_max_tokens)
         tools = request_data.get("tools")
         
         # Debug logging
@@ -370,7 +512,7 @@ def generate_response(request_data: Dict[str, Any]) -> Dict[str, Any]:
         model_id = model_config.get("model_id", "unknown")
         supports_fc = supports_function_calling()
         
-        logger.info(f"Request: has_tools={has_tools}, model_id={model_id}, supports_fc={supports_fc}")
+        logger.info(f"Request: has_tools={has_tools}, model_id={model_id}, supports_fc={supports_fc}, has_tool_responses={has_tool_responses}")
         
         from vllm import SamplingParams
         
@@ -386,7 +528,7 @@ def generate_response(request_data: Dict[str, Any]) -> Dict[str, Any]:
         start_time = time.time()
         
         # For function calling, try vLLM's chat method first (it should handle tools properly)
-        if tools and supports_fc:
+        if tools and supports_fc and not has_tool_responses:
             logger.info("Function calling detected - trying vLLM chat method first")
             try:
                 # Try vLLM's chat method with tools - use OpenAI format directly
@@ -402,7 +544,11 @@ def generate_response(request_data: Dict[str, Any]) -> Dict[str, Any]:
                 use_generate_fallback = True
         else:
             try:
-                # Use vLLM's chat method for non-function calls
+                # Use vLLM's chat method for non-function calls or tool responses
+                if has_tool_responses:
+                    logger.info("Processing conversation with tool responses - using chat method")
+                else:
+                    logger.info("Using chat method for regular conversation")
                 outputs = model_engine.chat(messages, sampling_params)
                 use_generate_fallback = False
                 
@@ -420,7 +566,14 @@ def generate_response(request_data: Dict[str, Any]) -> Dict[str, Any]:
                 role = msg.get("role", "user")
                 content = msg.get("content", "")
                 
-                if isinstance(content, list):
+                # Handle tool responses specially with clearer formatting
+                if role == "tool":
+                    tool_name = msg.get("name", "unknown_tool")
+                    # Make tool results more prominent and clear
+                    prompt_parts.append(f"\n--- TOOL RESULT from {tool_name} ---")
+                    prompt_parts.append(content)
+                    prompt_parts.append("--- END TOOL RESULT ---\n")
+                elif isinstance(content, list):
                     text_parts = []
                     for item in content:
                         if isinstance(item, dict):
@@ -429,11 +582,12 @@ def generate_response(request_data: Dict[str, Any]) -> Dict[str, Any]:
                             elif "audio" in str(item):
                                 text_parts.append("[Audio content provided]")
                     content = " ".join(text_parts) if text_parts else str(content)
-                    
-                prompt_parts.append(f"{role}: {content}")
+                    prompt_parts.append(f"{role}: {content}")
+                else:
+                    prompt_parts.append(f"{role}: {content}")
             
-            # Add tool information to prompt if tools are provided
-            if tools and supports_fc:
+            # Add tool information to prompt if tools are provided (but not if we already have tool responses)
+            if tools and supports_fc and not has_tool_responses:
                 tool_descriptions = []
                 for tool in tools:
                     if "function" in tool:
@@ -451,9 +605,34 @@ def generate_response(request_data: Dict[str, Any]) -> Dict[str, Any]:
                     prompt_parts.append("\n--- INSTRUCTIONS ---")
                     prompt_parts.append("You have access to the functions listed above.")
                     prompt_parts.append("When the user asks for information that requires a function call, you MUST use the function.")
-                    prompt_parts.append("Format your response as: [TOOL_CALLS][{\"name\": \"function_name\", \"arguments\": {\"param\": \"value\"}}]")
+                    prompt_parts.append("Format your response as: [tool_calls][{\"name\": \"function_name\", \"arguments\": {\"param\": \"value\"}}]")
                     prompt_parts.append("Do NOT say you cannot access real-time information when functions are available.")
+                    prompt_parts.append("Example: If asked about weather, use get_current_weather function.")
                     prompt_parts.append("--- END INSTRUCTIONS ---\n")
+            elif has_tool_responses:
+                # Find the most recent user question to provide context
+                latest_user_question = "the user's question"
+                for msg in reversed(messages):
+                    if msg.get("role") == "user":
+                        content = msg.get("content", "")
+                        if isinstance(content, list):
+                            text_parts = [item.get("text", "") for item in content if item.get("type") == "text"]
+                            if text_parts:
+                                latest_user_question = " ".join(text_parts)
+                        elif isinstance(content, str):
+                            latest_user_question = content
+                        break
+                
+                # Add instruction for processing tool responses with better context
+                prompt_parts.append("\n--- TOOL RESPONSE PROCESSING ---")
+                prompt_parts.append(f"The user asked: '{latest_user_question}'")
+                prompt_parts.append("You have received tool results above that contain the information needed to answer this question.")
+                prompt_parts.append("Now provide a complete, comprehensive answer using ALL the tool results.")
+                prompt_parts.append("Be specific and include all relevant details from the tool responses.")
+                prompt_parts.append("DO NOT just say 'I'll help you with that' - give the actual answer with the data.")
+                prompt_parts.append("If multiple tool results are provided, synthesize all of them into one coherent response.")
+                prompt_parts.append("DO NOT use [tool_calls] format - provide the final natural language answer.")
+                prompt_parts.append("--- END INSTRUCTIONS ---\n")
             
             prompt_parts.append("assistant:")
             formatted_prompt = "\n".join(prompt_parts)
@@ -478,8 +657,10 @@ def generate_response(request_data: Dict[str, Any]) -> Dict[str, Any]:
         logger.info(f"Generated response in {generation_time:.2f}s")
         logger.info(f"Raw response: {generated_text[:200]}...")
         
-        # Parse tool calls from the response
-        tool_calls = parse_voxtral_tool_calls(generated_text)
+        # Parse tool calls from the response (only if we don't have tool responses)
+        tool_calls = None
+        if not has_tool_responses:
+            tool_calls = parse_voxtral_tool_calls(generated_text)
         
         # Clean the text
         clean_text = clean_voxtral_tool_calls_from_text(generated_text)
@@ -490,10 +671,15 @@ def generate_response(request_data: Dict[str, Any]) -> Dict[str, Any]:
             "content": clean_text
         }
         
-        # Add tool calls if present
-        if tool_calls:
+        # Add tool calls if present (only for initial tool call, not for responses)
+        if tool_calls and not has_tool_responses:
             message_response["tool_calls"] = tool_calls
             logger.info(f"✅ Found {len(tool_calls)} tool calls")
+        
+        # Determine finish reason
+        finish_reason = "stop"
+        if tool_calls and not has_tool_responses:
+            finish_reason = "tool_calls"
         
         # Create OpenAI-compatible response
         response = {
@@ -501,7 +687,7 @@ def generate_response(request_data: Dict[str, Any]) -> Dict[str, Any]:
                 {
                     "index": 0,
                     "message": message_response,
-                    "finish_reason": "tool_calls" if tool_calls else "stop"
+                    "finish_reason": finish_reason
                 }
             ],
             "usage": {
