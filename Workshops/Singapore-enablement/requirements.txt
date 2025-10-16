@@ -1,0 +1,18 @@
+# Python package dependencies for Singapore Workshop
+
+# Core AWS and SageMaker
+boto3>=1.26.0
+sagemaker>=2.150.0
+
+# Data processing
+pandas>=1.5.0
+numpy>=1.24.0
+
+# Agentic framework
+strands-agents>=0.1.6
+
+# Jupyter and display
+ipython>=8.0.0
+
+# Standard library packages (included in Python, listed for reference)
+# json, base64, os, datetime, typing, warnings, dataclasses
