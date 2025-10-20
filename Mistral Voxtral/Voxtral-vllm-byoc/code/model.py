@@ -43,6 +43,11 @@ model_config = {}
 model_loaded = False
 server_ready = False
 
+# Configuration constants 
+MAX_AUDIO_SIZE_MB = 50  # 50MB limit for audio files
+MAX_AUDIO_SIZE_BYTES = MAX_AUDIO_SIZE_MB * 1024 * 1024
+
+
 # Pydantic models for request validation
 class ChatMessage(BaseModel):
     role: str
@@ -331,6 +336,7 @@ def parse_voxtral_tool_calls(text: str) -> Optional[List[Dict[str, Any]]]:
                     tool_call_data = [tool_call_data]
 
                 for tool_data in tool_call_data:
+                    # tool_call_id = secrets.token_urlsafe(12)  # Generates 16-character secure ID
                     tool_call_id = ''.join(random.choices('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', k=9))
                     openai_tool_call = {
                         "id": tool_call_id,
@@ -359,6 +365,92 @@ def clean_voxtral_tool_calls_from_text(text: str) -> str:
     except Exception:
         return text
 
+def validate_audio_url(url: str) -> bool:
+    """
+    Validate audio URL to prevent SSRF attacks.
+
+    For POC/sample: Blocks AWS metadata endpoint and localhost.
+    For production: Add allowlist of approved domains.
+    """
+    from urllib.parse import urlparse
+
+    # Parse URL
+    try:
+        parsed = urlparse(url)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid URL format")
+
+    # Must be HTTPS (allow HTTP for local testing)
+    if parsed.scheme not in ['http', 'https']:
+        raise HTTPException(status_code=400, detail="Only HTTP/HTTPS URLs supported")
+
+    # Block AWS metadata endpoint (critical!)
+    blocked_hosts = [
+        '169.254.169.254',  # AWS metadata
+        'metadata.google.internal',  # GCP metadata
+        '127.0.0.1',
+        'localhost',
+        '0.0.0.0'
+    ]
+
+    hostname = parsed.hostname or ''
+    if hostname in blocked_hosts:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Access to {hostname} is not allowed"
+        )
+
+    # Block private IP ranges (optional but recommended)
+    if hostname.startswith(('10.', '172.16.', '192.168.')):
+        raise HTTPException(
+            status_code=400,
+            detail="Private IP addresses are not allowed"
+        )
+
+    return True
+
+def validate_file_path(file_path: str, allowed_base: str = "/opt/ml") -> str:
+    """
+    Validate file path to prevent path traversal attacks.
+
+    For POC: Restricts to /opt/ml and /tmp directories.
+    Adjust allowed_base for your specific requirements.
+    """
+    import os
+
+    # Resolve to absolute path
+    try:
+        abs_path = os.path.abspath(file_path)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid file path")
+
+    # Check if path is within allowed directories
+    allowed_prefixes = [
+        os.path.abspath(allowed_base),
+        os.path.abspath("/tmp")
+    ]
+
+    if not any(abs_path.startswith(prefix) for prefix in allowed_prefixes):
+        raise HTTPException(
+            status_code=400,
+            detail=f"File access restricted to allowed directories"
+        )
+
+    # Additional safety checks
+    if ".." in file_path or file_path.startswith("/etc/"):
+        raise HTTPException(status_code=400, detail="Invalid file path")
+
+    return abs_path
+
+def validate_audio_size(audio_data: bytes) -> bool:
+    """Validate audio file size to prevent DoS via large files."""
+    if len(audio_data) > MAX_AUDIO_SIZE_BYTES:
+        raise HTTPException(
+            status_code=413,  # Payload Too Large
+            detail=f"Audio file exceeds maximum size of {MAX_AUDIO_SIZE_MB}MB"
+        )
+    return True
+
 def load_audio_from_source(audio_source: Union[str, Dict[str, Any]]) -> Optional[Any]:
     """Load audio from various sources and return Audio object"""
     if not MISTRAL_AVAILABLE:
@@ -370,17 +462,20 @@ def load_audio_from_source(audio_source: Union[str, Dict[str, Any]]) -> Optional
 
         if isinstance(audio_source, str):
             if audio_source.startswith(('http://', 'https://')):
+                validate_audio_url(audio_source)  # Add validation
                 response = requests.get(audio_source, stream=True, timeout=30)
                 response.raise_for_status()
                 audio_data = response.content
             else:
-                with open(audio_source, 'rb') as f:
+                validated_path = validate_file_path(audio_source)
+                with open(validated_path, 'rb') as f:
                     audio_data = f.read()
 
         elif isinstance(audio_source, dict):
             if "path" in audio_source:
                 audio_url = audio_source["path"]
                 if audio_url.startswith(('http://', 'https://')):
+                    validate_audio_url(audio_url)  # Add validation
                     response = requests.get(audio_url, stream=True, timeout=30)
                     response.raise_for_status()
                     audio_data = response.content
@@ -395,6 +490,9 @@ def load_audio_from_source(audio_source: Union[str, Dict[str, Any]]) -> Optional
 
         if audio_data is None:
             return None
+
+        # Validate file size
+        validate_audio_size(audio_data)
 
         with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as tmp_file:
             tmp_file.write(audio_data)
@@ -774,7 +872,9 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Voxtral vLLM OpenAI-Compatible Server",
     version="2.0.0",
-    lifespan=lifespan
+    lifespan=lifespan,
+    # Limit request body size to prevent DoS
+    max_request_size=100 * 1024 * 1024  # 100MB max
 )
 
 @app.get("/ping")
