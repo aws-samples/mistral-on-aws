@@ -3,7 +3,7 @@
 # Using official vLLM image as base to avoid compilation issues
 # and ensure compatibility with CUDA and vLLM 0.10+
 
-FROM --platform=linux/amd64 vllm/vllm-openai:latest
+FROM --platform=linux/amd64 vllm/vllm-openai:v0.6.4
 
 # Set environment variables for SageMaker
 ENV MODEL_CACHE_DIR=/opt/ml/model
@@ -20,7 +20,7 @@ RUN apt-get update && apt-get install -y \
 
 # Install additional dependencies for Voxtral audio processing and SageMaker BYOC
 RUN pip install --no-cache-dir \
-    "mistral_common>=1.8.1" \
+    "mistral_common==1.8.1" \
     librosa>=0.10.2 \
     soundfile>=0.12.1 \
     pydub>=0.25.1 \
@@ -30,14 +30,22 @@ RUN pip install --no-cache-dir \
 # Create necessary directories
 RUN mkdir -p /opt/ml/model /opt/ml/code /tmp/transformers_cache /tmp/hf_home
 
+# Create non-root user for running the application
+RUN groupadd -r appuser && \
+    useradd -r -g appuser -u 1000 appuser && \
+    chown -R appuser:appuser /opt/ml /tmp/transformers_cache /tmp/hf_home
+    
+# Switch to non-root user
+USER appuser
+
 # Set working directory
 WORKDIR /opt/ml/code
 
 # Note: model.py, serving.properties, and requirements.txt will be provided via model_data
 
 # Health check - disabled during startup to prevent container startup failures
-# HEALTHCHECK --interval=30s --timeout=30s --start-period=120s --retries=3 \
-#     CMD curl -f http://localhost:8080/ping || exit 1
+HEALTHCHECK --interval=30s --timeout=30s --start-period=180s --retries=3 \
+    CMD curl -f http://localhost:8080/ping || exit 1
 
 # Expose the port for SageMaker
 EXPOSE 8080

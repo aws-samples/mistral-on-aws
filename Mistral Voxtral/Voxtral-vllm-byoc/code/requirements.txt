@@ -2,22 +2,22 @@
 # Core dependencies are installed in Dockerfile, these are supplementary
 
 # API and web framework dependencies
-fastapi>=0.115.0
-uvicorn[standard]>=0.32.0
+fastapi==0.115.4
+uvicorn[standard]==0.32.0
 gunicorn>=23.0.0
 pydantic>=2.0.0
 
 # OpenAI client for vLLM integration
-openai>=1.0.0
+openai==1.99.1
 
 # Mistral Common for audio processing and transcription
-mistral_common[audio]>=1.8.1
+mistral_common[audio]==1.8.2
 
 # HTTP and networking
 httpx>=0.27.0
-aiohttp>=3.10.0
+aiohttp>=3.11.0
 websockets>=13.0
-requests>=2.31.0
+requests==2.32.3
 
 # Audio processing (additional libraries)
 scipy>=1.14.0
@@ -32,10 +32,6 @@ psutil>=6.0.0
 # AWS and cloud integrations
 aioboto3>=13.0.0
 aiobotocore>=2.15.0
-
-# Development and debugging (optional)
-ipython>=8.28.0
-jupyter>=1.1.1
 
 # Monitoring and observability
 prometheus-client>=0.21.0
