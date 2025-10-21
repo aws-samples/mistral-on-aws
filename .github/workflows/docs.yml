@@ -5,6 +5,10 @@ on:
       - 'docs/**'
       - '.github/workflows/docs.yml'
       - 'mkdocs.yml'
+
+permissions:
+  contents: write
+
 jobs:
     publish:
         runs-on: ubuntu-latest
