@@ -3,7 +3,7 @@
 # Using official vLLM image as base to avoid compilation issues
 # and ensure compatibility with CUDA and vLLM 0.10+
 
-FROM --platform=linux/amd64 vllm/vllm-openai:v0.6.4
+FROM --platform=linux/amd64 vllm/vllm-openai:v0.10.1.1
 
 # Set environment variables for SageMaker
 ENV MODEL_CACHE_DIR=/opt/ml/model
@@ -30,13 +30,9 @@ RUN pip install --no-cache-dir \
 # Create necessary directories
 RUN mkdir -p /opt/ml/model /opt/ml/code /tmp/transformers_cache /tmp/hf_home
 
-# Create non-root user for running the application
-RUN groupadd -r appuser && \
-    useradd -r -g appuser -u 1000 appuser && \
-    chown -R appuser:appuser /opt/ml /tmp/transformers_cache /tmp/hf_home
     
 # Switch to non-root user
-USER appuser
+USER root
 
 # Set working directory
 WORKDIR /opt/ml/code

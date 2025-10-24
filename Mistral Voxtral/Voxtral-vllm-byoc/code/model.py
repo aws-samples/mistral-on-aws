@@ -466,7 +466,21 @@ def load_audio_from_source(audio_source: Union[str, Dict[str, Any]]) -> Optional
                 response = requests.get(audio_source, stream=True, timeout=30)
                 response.raise_for_status()
                 audio_data = response.content
+            elif audio_source.startswith('data:'):
+                # Handle data URL format (e.g., data:audio/wav;base64,...)
+                base64_data = audio_source.split(',', 1)[1] if ',' in audio_source else audio_source
+                audio_data = base64.b64decode(base64_data)
+            elif '/' not in audio_source and '\\' not in audio_source:
+                # Likely a base64 string (no path separators)
+                try:
+                    audio_data = base64.b64decode(audio_source)
+                except Exception:
+                    # If base64 decode fails, treat as file path
+                    validated_path = validate_file_path(audio_source)
+                    with open(validated_path, 'rb') as f:
+                        audio_data = f.read()
             else:
+                # Treat as file path
                 validated_path = validate_file_path(audio_source)
                 with open(validated_path, 'rb') as f:
                     audio_data = f.read()
