@@ -1,18 +1,37 @@
 # Python package dependencies for Singapore Workshop
+# Install with: pip install -r requirements.txt
 
 # Core AWS and SageMaker
-boto3>=1.26.0
-sagemaker>=2.150.0
+boto3>=1.34.0
+sagemaker>=2.200.0,<3.0.0
 
 # Data processing
-pandas>=1.5.0
+pandas>=2.0.0
 numpy>=1.24.0
 
-# Agentic framework
+# Agentic framework (for Notebook 02)
 strands-agents>=0.1.6
+
+# Fine-tuning and ML libraries (for Notebook 04)
+transformers>=4.36.0
+accelerate>=0.25.0
+peft>=0.7.0
+bitsandbytes>=0.41.0
+datasets>=2.16.0
+
+# Utilities
+tqdm>=4.66.0
 
 # Jupyter and display
 ipython>=8.0.0
+ipywidgets>=8.0.0
 
+# Dependency resolution fixes
+protobuf>=6.31.1,<7.0.0
+opentelemetry-proto>=1.33.1
+starlette>=0.46.2
+rich>=14.0.0,<15.0.0
+
+# Note: PyTorch (torch>=2.1.0) will be installed by SageMaker training container
 # Standard library packages (included in Python, listed for reference)
 # json, base64, os, datetime, typing, warnings, dataclasses

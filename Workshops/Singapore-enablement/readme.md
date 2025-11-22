@@ -1,106 +1,188 @@
-# Singapore Enablement Workshop
+# Mistral on AWS - Singapore Enablement Workshop
 
-## Overview
+This workshop provides hands-on experience with Mistral AI models on AWS, covering OCR, agentic workflows, Bedrock integration, and fine-tuning.
 
-This workshop provides hands-on experience with Mistral models on AWS, covering advanced topics including optical character recognition (OCR), single-agent security analysis, and sophisticated multi-agent workflow orchestration using the Strands Agents framework.
+## Workshop Structure
 
-## Notebooks
+### Notebook 01a: Introduction to Mistral OCR (Workshop Studio)
+**File:** `01a-intro-to-mistral-ocr-workshop.ipynb`
 
-### 1. Agentic Use Cases with Mistral (`Agentic_Use_Cases_Mistral.ipynb`)
+Learn how to use Mistral's OCR capabilities in a Workshop Studio environment with cross-account access to a pre-deployed OCR endpoint.
 
-Learn to build intelligent security analysis systems using **Strands Agents** framework with Mistral's **Pixtral Large** model on Amazon Bedrock.
+**Topics Covered:**
+- Cross-account SageMaker endpoint access
+- Document processing with Mistral OCR
+- Image-to-text extraction
+- Practical OCR use cases
 
-**Part 1: Single-Agent Security Analysis**
-- Analyze CloudWatch logs for security incidents
-- Review AWS SecurityHub compliance findings
-- Detect performance anomalies in metrics data
-- Correlate events across multiple data sources
-- Provide actionable remediation recommendations
+**Prerequisites:**
+- Workshop Studio account
+- No additional setup required
 
-**Part 2: Multi-Agent Workflow Orchestration**
-- **Triage Agent**: Routes investigations to appropriate specialists
-- **Log Analysis Agent**: Focuses on CloudWatch security events
-- **Compliance Agent**: Reviews SecurityHub findings
-- **Metrics Agent**: Detects performance anomalies
-- **Remediation Agent**: Synthesizes findings into action plans
+---
 
-**Key Capabilities:**
-- Tool functions with `@tool` decorator for agent-callable Python functions
-- Sequential orchestration with agents building upon each other's findings
-- Conditional routing based on investigation type (log_analysis, compliance_review, metrics_analysis, full_audit)
-- State management tracking findings across multiple agent executions
-- Synthesis combining insights from all specialists
+### Notebook 01b: Introduction to Mistral OCR (Own Account)
+**File:** `01b-intro-to-mistral-ocr-own-account.ipynb`
 
-### 2. Mistral OCR (`Mistral_OCR.ipynb`)
+Deploy and use Mistral OCR in your own AWS account.
 
-Demonstrates Optical Character Recognition using Mistral OCR model (mistral-ocr-2505) on Amazon SageMaker.
+**Topics Covered:**
+- Deploying Mistral OCR endpoint
+- Document processing workflows
+- Cost optimization strategies
 
-**Features:**
-- Extract text from scanned documents, receipts, and forms
-- Process handwritten notes and whiteboard images
-- Handle multi-page PDF documents
-- Multi-language support (French, Arabic, and more)
-- Structured markdown output with embedded images
+**Prerequisites:**
+- AWS account with SageMaker access
+- Sufficient service quotas for GPU instances
 
-**Use Cases:**
-- Document digitization and processing
-- Invoice batch processing with structured data extraction
-- Handwriting recognition from whiteboards and notes
-- Document understanding pipelines combining OCR with LLMs (Mistral Small 3.0)
+---
 
-## Setup
+### Notebook 02: Agentic Use Cases with Mistral
+**File:** `02-Agentic-Use-Cases-Mistral.ipynb`
 
-### Prerequisites
-- AWS account with Amazon Bedrock access
-- Python 3.8+
-- Jupyter Notebook or JupyterLab
+Build intelligent AI agents using Mistral models and the Strands framework.
 
-### Installation
+**Topics Covered:**
+- Agent architecture patterns
+- Tool calling and function execution
+- Multi-step reasoning workflows
+- Practical agent implementations
 
-1. Install the required dependencies:
+**Prerequisites:**
+- Completed Notebook 01
+- Understanding of AI agent concepts
 
-```bash
-pip install -r requirements.txt
-```
+---
 
-2. Configure AWS credentials:
+### Notebook 03: Mistral Models on Amazon Bedrock
+**File:** `03-mistral-models-on-bedrock.ipynb`
 
-```bash
-aws configure
-```
+Explore Mistral models available through Amazon Bedrock.
 
-3. Ensure you have access to the following models in Amazon Bedrock:
-   - `us.mistral.pixtral-large-2502-v1:0` (for Agentic use cases)
-   - Mistral OCR model deployment on SageMaker (for OCR notebook)
+**Topics Covered:**
+- Bedrock API integration
+- Model comparison and selection
+- Streaming responses
+- Cost optimization
 
-## Requirements
+**Prerequisites:**
+- Bedrock model access enabled
+- IAM permissions for Bedrock
 
-Core dependencies:
-- `boto3>=1.26.0` - AWS SDK for Python
-- `sagemaker>=2.150.0` - Amazon SageMaker Python SDK
-- `pandas>=1.5.0` - Data manipulation and analysis
-- `numpy>=1.24.0` - Numerical computing
-- `strands-agents>=0.1.6` - Strands Agents framework for multi-agent orchestration
-- `ipython>=8.0.0` - Interactive Python shell and Jupyter support
+---
 
-See `requirements.txt` for the complete list.
+### Notebook 04: Fine-tuning Mistral on SageMaker
+**File:** `04-mistral-finetuning-sagemaker.ipynb`
 
-## Usage
+Learn how to fine-tune Mistral models using SageMaker Training Jobs.
 
-Open the notebooks in Jupyter or JupyterLab:
+**Topics Covered:**
+- Dataset preparation for fine-tuning
+- LoRA (Low-Rank Adaptation) configuration
+- SageMaker training job setup
+- Model deployment and testing
 
-```bash
-jupyter notebook
-```
+**Prerequisites:**
+- Understanding of fine-tuning concepts
+- SageMaker training job permissions
+- GPU instance access (ml.g5.2xlarge or similar)
 
-Then navigate to:
-- `Agentic_Use_Cases_Mistral.ipynb` for multi-agent security workflows
-- `Mistral_OCR.ipynb` for OCR demonstrations
+**Key Features:**
+- No SageMaker Domain/Studio required
+- Works within Workshop Studio constraints
+- Uses efficient LoRA fine-tuning
+- Simple training job approach
 
-Follow the step-by-step instructions in each notebook to explore the capabilities of Mistral models on AWS.
+---
+
+## Setup Instructions
+
+### For Workshop Studio
+
+1. Launch the CloudFormation stack using `ocr-workshop.yaml`
+2. Wait for the SageMaker notebook instance to be created
+3. Open JupyterLab from the SageMaker console
+4. Navigate to `mistral-on-aws/Workshops/Singapore-enablement/`
+5. Start with notebook 01a
+
+### For Your Own AWS Account
+
+1. Ensure you have the necessary IAM permissions (see `participant_iam_policy.json`)
+2. Launch a SageMaker notebook instance or use SageMaker Studio
+3. Clone this repository
+4. Install required packages: `pip install -r requirements.txt`
+5. Start with notebook 01b
+
+---
+
+## Required Permissions
+
+The workshop requires the following AWS permissions:
+
+- **SageMaker:** Create/describe/invoke endpoints, training jobs
+- **Bedrock:** Invoke models, list foundation models
+- **S3:** Read/write to SageMaker default bucket
+- **IAM:** PassRole for SageMaker execution
+- **CloudWatch:** Read logs
+- **ECR:** Pull container images
+
+See `participant_iam_policy.json` for the complete policy.
+
+---
+
+## Cost Considerations
+
+**Estimated Costs (per hour):**
+- SageMaker Notebook (ml.t3.xlarge): ~$0.23/hour
+- SageMaker Endpoint (ml.g5.2xlarge): ~$1.52/hour
+- Bedrock API calls: Pay per token
+- Training Job (ml.g5.2xlarge): ~$1.52/hour
+
+**Cost Optimization Tips:**
+- Stop notebook instances when not in use
+- Delete endpoints after testing
+- Use Bedrock for inference when possible (no infrastructure costs)
+- Monitor CloudWatch for usage patterns
+
+---
+
+## Troubleshooting
+
+### Common Issues
+
+**Issue:** "Unable to assume role"
+- **Solution:** Verify IAM permissions and trust relationships
+
+**Issue:** "Service quota exceeded"
+- **Solution:** Request quota increase for GPU instances
+
+**Issue:** "Model not found"
+- **Solution:** Ensure Bedrock model access is enabled in your region
+
+**Issue:** "Training job failed"
+- **Solution:** Check CloudWatch logs for detailed error messages
+
+---
 
 ## Additional Resources
 
-- `NOTEBOOK_REVIEW.md` - Comprehensive review of the Agentic Use Cases notebook structure and data flow
-- `images/` - Sample images for OCR processing (invoices, whiteboards, documents)
-- `docs/` - Additional documentation files
+- [Mistral AI Documentation](https://docs.mistral.ai/)
+- [Amazon SageMaker Documentation](https://docs.aws.amazon.com/sagemaker/)
+- [Amazon Bedrock Documentation](https://docs.aws.amazon.com/bedrock/)
+- [Mistral on AWS GitHub Repository](https://github.com/aws-samples/mistral-on-aws)
+
+---
+
+## Support
+
+For issues or questions:
+1. Check the troubleshooting section above
+2. Review CloudWatch logs for detailed error messages
+3. Consult the AWS documentation links
+4. Open an issue on the GitHub repository
+
+---
+
+## License
+
+This workshop is provided under the MIT-0 License. See the LICENSE file for details.
