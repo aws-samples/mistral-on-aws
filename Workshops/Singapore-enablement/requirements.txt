@@ -1,5 +1,12 @@
 # Python package dependencies for Singapore Workshop
 # Install with: pip install -r requirements.txt
+#
+# If you encounter CMake or build errors with pyarrow, try:
+# pip install --only-binary=:all: -r requirements.txt
+#
+# Or install pyarrow separately first:
+# pip install pyarrow==14.0.1 --only-binary=:all:
+# pip install -r requirements.txt
 
 # Core AWS and SageMaker
 boto3>=1.34.0
@@ -8,6 +15,7 @@ sagemaker>=2.200.0,<3.0.0
 # Data processing
 pandas>=2.0.0
 numpy>=1.24.0
+pyarrow>=14.0.0,<15.0.0  # Pre-built binary to avoid CMake build issues
 
 # Agentic framework (for Notebook 02)
 strands-agents>=0.1.6
