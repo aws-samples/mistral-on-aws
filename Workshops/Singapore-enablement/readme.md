@@ -95,6 +95,26 @@ Learn how to fine-tune Mistral models using SageMaker Training Jobs.
 
 ---
 
+## ⚠️ Important: Workshop Studio Limitations
+
+**If you're using AWS Workshop Studio**, please read [WORKSHOP_STUDIO_LIMITATIONS.md](WORKSHOP_STUDIO_LIMITATIONS.md) first!
+
+**Key limitations:**
+- ❌ Cannot request GPU quota increases (blocked by SCPs)
+- ⚠️ Limited GPU instance availability (may be 0 quota)
+- ⏰ Time-limited access (4-8 hours)
+- 💡 **Solution:** Use available instances (ml.g5.xlarge, ml.g4dn.xlarge) or complete notebooks 01-03
+
+**Quick fix for Notebook 04:**
+```python
+# Try these instance types in order:
+selected_instance = instance_options[1]  # ml.g5.xlarge
+# or
+selected_instance = instance_options[3]  # ml.g4dn.xlarge
+```
+
+---
+
 ## Setup Instructions
 
 ### For Workshop Studio
@@ -104,6 +124,7 @@ Learn how to fine-tune Mistral models using SageMaker Training Jobs.
 3. Open JupyterLab from the SageMaker console
 4. Navigate to `mistral-on-aws/Workshops/Singapore-enablement/`
 5. Start with notebook 01a
+6. **For Notebook 04:** See [QUOTA_SOLUTIONS.md](QUOTA_SOLUTIONS.md) if you get quota errors
 
 ### For Your Own AWS Account
 
@@ -148,19 +169,29 @@ See `participant_iam_policy.json` for the complete policy.
 
 ## Troubleshooting
 
-### Common Issues
+### Quick Fixes
+
+**Issue:** PyArrow build error (CMake)
+- **Solution:** `pip install --only-binary=:all: -r requirements.txt`
+
+**Issue:** GPU quota exceeded (ResourceLimitExceeded)
+- **Solution:** Try `ml.g5.xlarge` or `ml.g4dn.xlarge` instead
+- See [INSTANCE_SELECTION_GUIDE.md](INSTANCE_SELECTION_GUIDE.md)
 
 **Issue:** "Unable to assume role"
 - **Solution:** Verify IAM permissions and trust relationships
 
-**Issue:** "Service quota exceeded"
-- **Solution:** Request quota increase for GPU instances
-
-**Issue:** "Model not found"
-- **Solution:** Ensure Bedrock model access is enabled in your region
+**Issue:** "Model not found" in Bedrock
+- **Solution:** Enable model access in Bedrock console
 
 **Issue:** "Training job failed"
 - **Solution:** Check CloudWatch logs for detailed error messages
+
+### Comprehensive Guides
+
+- **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Complete troubleshooting guide
+- **[INSTANCE_SELECTION_GUIDE.md](INSTANCE_SELECTION_GUIDE.md)** - GPU instance selection
+- **[FACILITATOR_GUIDE.md](FACILITATOR_GUIDE.md)** - Workshop facilitation guide
 
 ---
 
