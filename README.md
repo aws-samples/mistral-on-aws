@@ -7,7 +7,37 @@ Open a PR if you would like to contribute! :twisted_rightwards_arrows:
 
 ## What's New :star::star:
 
-Explore our comprehensive collection of notebooks organized by model, deployment options, and use cases!
+### New Model Launches on Amazon Bedrock
+
+#### Mistral Large 3 (675B)
+Mistral's flagship frontier model is now available on Amazon Bedrock! A sparse Mixture-of-Experts architecture with **41B active parameters** out of **675B total**, delivering frontier-level multimodal performance under the Apache 2.0 license.
+
+- [Mistral Large 3 Capabilities Guide](Mistral%20Large%203/Mistral_Large_3_Capabilities.ipynb) - Text generation, multilingual (40+ languages), vision, and complex reasoning
+
+| Specification | Details |
+|--------------|----------|
+| Model ID | `mistral.mistral-large-3-675b-instruct` |
+| Architecture | Sparse MoE (41B active / 675B total) |
+| Multimodal | Yes (Text + Vision) |
+| License | Apache 2.0 |
+
+#### Ministral Models (3B, 8B, 14B)
+Compact yet powerful models optimized for edge deployment and cost-efficient inference, now available on Amazon Bedrock!
+
+- [Ministral Capabilities Guide](Ministral/Ministral_Capabilities.ipynb) - Model comparison, text generation, reasoning, code, JSON output, and vision
+
+| Model | Model ID | Best For |
+|-------|----------|----------|
+| **Ministral 3B** | `mistral.ministral-3-3b-instruct` | Edge devices, ultra-low latency |
+| **Ministral 8B** | `mistral.ministral-3-8b-instruct` | Balanced performance/efficiency |
+| **Ministral 14B** | `mistral.ministral-3-14b-instruct` | Complex reasoning, code generation |
+
+#### Building AI Agents with Strands
+Learn how to build production-ready AI agent systems using the [Strands Agents SDK](https://github.com/strands-agents/sdk-python) with Mistral models on Bedrock.
+
+- [Strands Agents with Mistral](Ministral/Strands_Agents_Mistral.ipynb) - Multi-agent orchestration, streaming, hooks, session persistence, and expert panels
+
+---
 
 ### Model Capabilities & Use Cases
 
@@ -18,14 +48,10 @@ Explore our comprehensive collection of notebooks organized by model, deployment
   - [Bedrock Marketplace Integration](Deployment/Bedrock%20Marketplace/Deploy-Pixtral12B-from-Bedrock-Marketplace.ipynb)
 
 #### Mistral Models
+- **Large 3**: [Frontier Multimodal Model Guide](Mistral%20Large%203/Mistral_Large_3_Capabilities.ipynb) - 675B MoE with vision
 - **Small 3**: [Model Overview & Capabilities](Mistral%20Small%203/Mistral_small_3.ipynb)
 - **NeMo**: [Comparative Analysis & Benchmarks](Mistral%20NeMo/NeMo_comparative_analysis.ipynb)
-
-### Latest Highlights ✨
-- Enhanced Pixtral deployment options across AWS services
-- Comprehensive model comparison and analysis
-- Streamlined deployment guides for various AWS services
-- In-depth exploration of model capabilities and use cases
+- **Ministral**: [3B, 8B, 14B Models Guide](Ministral/Ministral_Capabilities.ipynb) - Compact models for edge and cost-efficient deployment
 
 > 💡 **Note**: All notebooks include detailed explanations, code samples, and best practices for implementation.
 
