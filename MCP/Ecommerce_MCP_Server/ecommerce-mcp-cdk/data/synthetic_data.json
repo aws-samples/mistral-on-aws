@@ -1,0 +1,2610 @@
+{
+  "products": [
+    {
+      "product_id": "prod-e9075764",
+      "name": "Rodriguez, Laptop Classic",
+      "description": "High-performance laptop. Devolved user-facing benchmark",
+      "price": 989.26,
+      "stock_quantity": 99,
+      "category": "Electronics",
+      "image_urls": [
+        "https://example.com/images/8b9d2434-e465-4150-bd9c-66b3ad3c2d6d.jpg"
+      ],
+      "created_at": "2025-07-20T10:25:53.859926"
+    },
+    {
+      "product_id": "prod-3c8c52ae",
+      "name": "Garza Smartphone Plus",
+      "description": "Latest smartphone. Assimilated background data-warehouse",
+      "price": 578.57,
+      "stock_quantity": 99,
+      "category": "Electronics",
+      "image_urls": [
+        "https://example.com/images/06cb0fb3-9a1d-4644-815e-f6d13b8faa18.jpg"
+      ],
+      "created_at": "2025-10-16T10:25:53.860038"
+    },
+    {
+      "product_id": "prod-3c95c58b",
+      "name": "Gonzalez, Tablet Classic",
+      "description": "Portable tablet. Face-to-face local parallelism",
+      "price": 744.4,
+      "stock_quantity": 74,
+      "category": "Electronics",
+      "image_urls": [
+        "https://example.com/images/01a9e71f-de8a-474b-8f36-d58b47378190.jpg"
+      ],
+      "created_at": "2025-10-24T10:25:53.860227"
+    },
+    {
+      "product_id": "prod-2ee67004",
+      "name": "Wolfe Headphones Standard",
+      "description": "Wireless headphones. Grass-roots coherent data-warehouse",
+      "price": 197.67,
+      "stock_quantity": 8,
+      "category": "Electronics",
+      "image_urls": [
+        "https://example.com/images/1a2a73ed-562b-4f79-8374-59eef50bea63.jpg"
+      ],
+      "created_at": "2025-10-21T10:25:53.860320"
+    },
+    {
+      "product_id": "prod-13608432",
+      "name": "James Monitor Plus",
+      "description": "4K display monitor. Monitored real-time firmware",
+      "price": 339.6,
+      "stock_quantity": 82,
+      "category": "Electronics",
+      "image_urls": [
+        "https://example.com/images/759cde66-bacf-43d0-8b1f-9163ce9ff57f.jpg"
+      ],
+      "created_at": "2025-11-24T10:25:53.860406"
+    },
+    {
+      "product_id": "prod-8f05e03b",
+      "name": "Martinez, Keyboard Standard",
+      "description": "Mechanical keyboard. Implemented responsive process improvement",
+      "price": 63.8,
+      "stock_quantity": 88,
+      "category": "Electronics",
+      "image_urls": [
+        "https://example.com/images/93cd59bf-5c94-4cf0-9c98-d2c1e2acf72f.jpg"
+      ],
+      "created_at": "2025-03-03T10:25:53.860583"
+    },
+    {
+      "product_id": "prod-b865eb96",
+      "name": "Bush Mouse Ultra",
+      "description": "Gaming mouse. Switchable discrete throughput",
+      "price": 48.66,
+      "stock_quantity": 80,
+      "category": "Electronics",
+      "image_urls": [
+        "https://example.com/images/daf61a26-146d-4f31-bc37-7a4c4a15544d.jpg"
+      ],
+      "created_at": "2025-07-18T10:25:53.860663"
+    },
+    {
+      "product_id": "prod-35df77f5",
+      "name": "Delacruz Webcam Premium",
+      "description": "HD webcam. Grass-roots logistical productivity",
+      "price": 223.86,
+      "stock_quantity": 25,
+      "category": "Electronics",
+      "image_urls": [
+        "https://example.com/images/5ec42e08-29a3-42e9-9d65-a441d58842de.jpg"
+      ],
+      "created_at": "2025-05-05T10:25:53.860741"
+    },
+    {
+      "product_id": "prod-b0bcf908",
+      "name": "Clark-Adams Smartwatch Max",
+      "description": "Fitness smartwatch. Synergized secondary archive",
+      "price": 311.15,
+      "stock_quantity": 32,
+      "category": "Electronics",
+      "image_urls": [
+        "https://example.com/images/88bd6407-2bcf-4e01-a28d-efe39bf00273.jpg"
+      ],
+      "created_at": "2025-06-18T10:25:53.860865"
+    },
+    {
+      "product_id": "prod-e8966bf3",
+      "name": "Sanchez, Speaker Pro",
+      "description": "Bluetooth speaker. Sharable system-worthy open architecture",
+      "price": 137.1,
+      "stock_quantity": 17,
+      "category": "Electronics",
+      "image_urls": [
+        "https://example.com/images/d7c524a5-5304-417f-af42-e12f3838b326.jpg"
+      ],
+      "created_at": "2025-06-07T10:25:53.861044"
+    },
+    {
+      "product_id": "prod-e6619ea4",
+      "name": "Perez T-Shirt Premium",
+      "description": "Comfortable cotton t-shirt. Intuitive impactful flexibility",
+      "price": 27.04,
+      "stock_quantity": 38,
+      "category": "Clothing",
+      "image_urls": [
+        "https://example.com/images/f16287e4-e9c3-49e0-b602-f8ac10f1bc81.jpg"
+      ],
+      "created_at": "2025-11-15T10:25:53.861121"
+    },
+    {
+      "product_id": "prod-f39d6364",
+      "name": "Walter, Jeans Classic",
+      "description": "Classic denim jeans. Object-based secondary knowledgebase",
+      "price": 76.75,
+      "stock_quantity": 20,
+      "category": "Clothing",
+      "image_urls": [
+        "https://example.com/images/3f22faf8-23be-401d-83cf-2fde24933b83.jpg"
+      ],
+      "created_at": "2025-05-28T10:25:53.861296"
+    },
+    {
+      "product_id": "prod-14c4e0d3",
+      "name": "Hoffman, Jacket Pro",
+      "description": "Stylish jacket. Reduced impactful hierarchy",
+      "price": 164.89,
+      "stock_quantity": 85,
+      "category": "Clothing",
+      "image_urls": [
+        "https://example.com/images/2369b584-ff5e-4ff0-bf50-bde4382567b8.jpg"
+      ],
+      "created_at": "2025-01-25T10:25:53.861468"
+    },
+    {
+      "product_id": "prod-7424207a",
+      "name": "Snyder, Sneakers Premium",
+      "description": "Running sneakers. Distributed responsive complexity",
+      "price": 104.25,
+      "stock_quantity": 29,
+      "category": "Clothing",
+      "image_urls": [
+        "https://example.com/images/98ae4334-6c12-4ce8-ae34-0454cac5b68c.jpg"
+      ],
+      "created_at": "2025-11-02T10:25:53.861638"
+    },
+    {
+      "product_id": "prod-5aba4796",
+      "name": "Cruz Dress Pro",
+      "description": "Elegant dress. Persistent multi-tasking extranet",
+      "price": 132.58,
+      "stock_quantity": 42,
+      "category": "Clothing",
+      "image_urls": [
+        "https://example.com/images/f143262f-dc5c-4eed-8da0-365bf89897b9.jpg"
+      ],
+      "created_at": "2025-10-28T10:25:53.861714"
+    },
+    {
+      "product_id": "prod-f2d7f5a4",
+      "name": "Frazier Sweater Premium",
+      "description": "Warm sweater. Synergized national system engine",
+      "price": 46.3,
+      "stock_quantity": 17,
+      "category": "Clothing",
+      "image_urls": [
+        "https://example.com/images/5715bd6f-a416-4293-84c2-e2e3444ea7c8.jpg"
+      ],
+      "created_at": "2025-05-27T10:25:53.861788"
+    },
+    {
+      "product_id": "prod-624321e3",
+      "name": "Carter Shorts Max",
+      "description": "Summer shorts. Persevering 24hour success",
+      "price": 38.14,
+      "stock_quantity": 51,
+      "category": "Clothing",
+      "image_urls": [
+        "https://example.com/images/f8cda88b-436d-46e2-b83c-fe0be037e5ed.jpg"
+      ],
+      "created_at": "2025-09-15T10:25:53.861863"
+    },
+    {
+      "product_id": "prod-ddbfef6f",
+      "name": "Gill, Boots Max",
+      "description": "Leather boots. Self-enabling exuding productivity",
+      "price": 158.16,
+      "stock_quantity": 90,
+      "category": "Clothing",
+      "image_urls": [
+        "https://example.com/images/2720797d-32eb-4689-9be5-78c781f631d4.jpg"
+      ],
+      "created_at": "2025-07-24T10:25:53.862038"
+    },
+    {
+      "product_id": "prod-0ffd63f7",
+      "name": "Farmer-Ryan Hat Classic",
+      "description": "Trendy hat. Vision-oriented multi-tasking ability",
+      "price": 47.78,
+      "stock_quantity": 87,
+      "category": "Clothing",
+      "image_urls": [
+        "https://example.com/images/04fc6d82-7d15-4385-92fb-e43b99546eb4.jpg"
+      ],
+      "created_at": "2025-11-01T10:25:53.862161"
+    },
+    {
+      "product_id": "prod-8a1ee423",
+      "name": "Hickman Scarf Standard",
+      "description": "Winter scarf. Front-line analyzing encoding",
+      "price": 29.05,
+      "stock_quantity": 73,
+      "category": "Clothing",
+      "image_urls": [
+        "https://example.com/images/14296c07-f26b-4776-913e-4de2e0c53cb8.jpg"
+      ],
+      "created_at": "2025-08-04T10:25:53.862237"
+    },
+    {
+      "product_id": "prod-aab90f7b",
+      "name": "Dennis Coffee Maker Plus",
+      "description": "Automatic coffee maker. Virtual national throughput",
+      "price": 113.96,
+      "stock_quantity": 39,
+      "category": "Home",
+      "image_urls": [
+        "https://example.com/images/79ac1b1e-a8e5-4e0c-a0de-435d2031d750.jpg"
+      ],
+      "created_at": "2025-01-14T10:25:53.862311"
+    },
+    {
+      "product_id": "prod-c9d0e828",
+      "name": "Martin, Blender Classic",
+      "description": "High-speed blender. Extended needs-based system engine",
+      "price": 96.83,
+      "stock_quantity": 92,
+      "category": "Home",
+      "image_urls": [
+        "https://example.com/images/b683d2e6-337e-42df-b09b-2a5cbadcc32a.jpg"
+      ],
+      "created_at": "2025-06-24T10:25:53.862479"
+    },
+    {
+      "product_id": "prod-26634528",
+      "name": "Ross-Powers Vacuum Premium",
+      "description": "Robot vacuum. Multi-layered leadingedge model",
+      "price": 407.33,
+      "stock_quantity": 12,
+      "category": "Home",
+      "image_urls": [
+        "https://example.com/images/3985c3cf-3f76-4e1d-9efa-21977394988f.jpg"
+      ],
+      "created_at": "2025-08-12T10:25:53.862601"
+    },
+    {
+      "product_id": "prod-7e5a1136",
+      "name": "Morgan Lamp Premium",
+      "description": "LED desk lamp. Reactive discrete parallelism",
+      "price": 28.05,
+      "stock_quantity": 45,
+      "category": "Home",
+      "image_urls": [
+        "https://example.com/images/b535106e-122c-4a56-81d7-425638602ab6.jpg"
+      ],
+      "created_at": "2025-05-16T10:25:53.862677"
+    },
+    {
+      "product_id": "prod-9f84d2b0",
+      "name": "Brown, Chair Max",
+      "description": "Ergonomic office chair. Managed asynchronous migration",
+      "price": 101.18,
+      "stock_quantity": 77,
+      "category": "Home",
+      "image_urls": [
+        "https://example.com/images/7c441fe7-ab42-40a7-874a-493b3ceddf2d.jpg"
+      ],
+      "created_at": "2025-06-29T10:25:53.862846"
+    },
+    {
+      "product_id": "prod-d3f9367b",
+      "name": "Ryan Desk Plus",
+      "description": "Standing desk. Re-engineered object-oriented leverage",
+      "price": 444.95,
+      "stock_quantity": 55,
+      "category": "Home",
+      "image_urls": [
+        "https://example.com/images/ceb81f9d-7914-4120-88dc-d19f3e351128.jpg"
+      ],
+      "created_at": "2025-01-12T10:25:53.862935"
+    },
+    {
+      "product_id": "prod-28b1e3fc",
+      "name": "Lee-Davis Rug Ultra",
+      "description": "Area rug. Optional heuristic interface",
+      "price": 85.72,
+      "stock_quantity": 22,
+      "category": "Home",
+      "image_urls": [
+        "https://example.com/images/baa4b71a-dd24-47ac-b78e-edb3693dffbc.jpg"
+      ],
+      "created_at": "2025-08-03T10:25:53.863076"
+    },
+    {
+      "product_id": "prod-63dab766",
+      "name": "Nunez Pillow Classic",
+      "description": "Memory foam pillow. Cross-platform analyzing initiative",
+      "price": 53.68,
+      "stock_quantity": 38,
+      "category": "Home",
+      "image_urls": [
+        "https://example.com/images/dc96925e-ccf3-4171-96dc-8907ba6c34ab.jpg"
+      ],
+      "created_at": "2025-02-11T10:25:53.863168"
+    },
+    {
+      "product_id": "prod-88063a8c",
+      "name": "Wright Curtains Ultra",
+      "description": "Blackout curtains. Public-key local challenge",
+      "price": 92.85,
+      "stock_quantity": 56,
+      "category": "Home",
+      "image_urls": [
+        "https://example.com/images/766ecb15-474e-4c19-aef9-12766c006f61.jpg"
+      ],
+      "created_at": "2025-06-05T10:25:53.863248"
+    },
+    {
+      "product_id": "prod-ca0876a7",
+      "name": "Baxter Mirror Plus",
+      "description": "Wall mirror. Organic neutral attitude",
+      "price": 199.57,
+      "stock_quantity": 22,
+      "category": "Home",
+      "image_urls": [
+        "https://example.com/images/8a63f881-ffd0-49d5-a6f2-f7b80cf35b58.jpg"
+      ],
+      "created_at": "2025-03-22T10:25:53.863324"
+    },
+    {
+      "product_id": "prod-9f283dfd",
+      "name": "Novak Fiction Novel Ultra",
+      "description": "Bestselling fiction. Down-sized incremental matrix",
+      "price": 11.82,
+      "stock_quantity": 11,
+      "category": "Books",
+      "image_urls": [
+        "https://example.com/images/66aa9385-dd59-4a71-b6b8-24817b3a4e3e.jpg"
+      ],
+      "created_at": "2025-10-12T10:25:53.863398"
+    },
+    {
+      "product_id": "prod-057a732e",
+      "name": "Martin Non-Fiction Plus",
+      "description": "Informative non-fiction. Networked empowering toolset",
+      "price": 26.43,
+      "stock_quantity": 92,
+      "category": "Books",
+      "image_urls": [
+        "https://example.com/images/6c4a37ea-4906-47f2-b47b-6dbac8fe3ccd.jpg"
+      ],
+      "created_at": "2025-05-05T10:25:53.863472"
+    },
+    {
+      "product_id": "prod-1180683e",
+      "name": "Bernard, Cookbook Standard",
+      "description": "Gourmet recipes. Universal mobile collaboration",
+      "price": 16.59,
+      "stock_quantity": 53,
+      "category": "Books",
+      "image_urls": [
+        "https://example.com/images/f7fd5646-37bb-4eec-8bf5-0b52309d258c.jpg"
+      ],
+      "created_at": "2025-02-05T10:25:53.863637"
+    },
+    {
+      "product_id": "prod-f5d65e5c",
+      "name": "Riley Biography Ultra",
+      "description": "Inspiring life story. Centralized value-added functionalities",
+      "price": 25.58,
+      "stock_quantity": 75,
+      "category": "Books",
+      "image_urls": [
+        "https://example.com/images/7a0ecfea-958c-49ba-8cd6-20c20ea2622b.jpg"
+      ],
+      "created_at": "2025-12-02T10:25:53.863712"
+    },
+    {
+      "product_id": "prod-dba642be",
+      "name": "Calhoun, Self-Help Classic",
+      "description": "Personal development. Profound attitude-oriented contingency",
+      "price": 24.97,
+      "stock_quantity": 92,
+      "category": "Books",
+      "image_urls": [
+        "https://example.com/images/acdabacc-1165-4210-9854-3881118a9d29.jpg"
+      ],
+      "created_at": "2025-03-08T10:25:53.863876"
+    },
+    {
+      "product_id": "prod-13fbdf7a",
+      "name": "Powell Science Premium",
+      "description": "Popular science. Fully-configurable optimal policy",
+      "price": 25.2,
+      "stock_quantity": 87,
+      "category": "Books",
+      "image_urls": [
+        "https://example.com/images/6b5252e3-14fc-4d54-9e8f-c9650a2c827e.jpg"
+      ],
+      "created_at": "2025-06-16T10:25:53.863962"
+    },
+    {
+      "product_id": "prod-5a1e8d72",
+      "name": "Silva, History Pro",
+      "description": "Historical account. Expanded static structure",
+      "price": 20.87,
+      "stock_quantity": 25,
+      "category": "Books",
+      "image_urls": [
+        "https://example.com/images/655238a6-43ff-4011-bd1a-85dd506e5a9a.jpg"
+      ],
+      "created_at": "2025-04-19T10:25:53.864141"
+    },
+    {
+      "product_id": "prod-78d34925",
+      "name": "Powers Art Book Pro",
+      "description": "Beautiful art collection. Persevering foreground system engine",
+      "price": 67.92,
+      "stock_quantity": 97,
+      "category": "Books",
+      "image_urls": [
+        "https://example.com/images/75523327-0262-4f73-9292-2f83ef8c485b.jpg"
+      ],
+      "created_at": "2025-07-26T10:25:53.864219"
+    },
+    {
+      "product_id": "prod-f1c4f7e4",
+      "name": "Murillo, Travel Guide Standard",
+      "description": "Destination guide. Extended motivating firmware",
+      "price": 39.05,
+      "stock_quantity": 69,
+      "category": "Books",
+      "image_urls": [
+        "https://example.com/images/e1805081-5958-4499-aeea-163e21e8ac68.jpg"
+      ],
+      "created_at": "2025-10-14T10:25:53.864385"
+    },
+    {
+      "product_id": "prod-654dfa58",
+      "name": "Suarez Poetry Premium",
+      "description": "Modern poetry collection. Horizontal cohesive intranet",
+      "price": 19.38,
+      "stock_quantity": 86,
+      "category": "Books",
+      "image_urls": [
+        "https://example.com/images/4d71c366-b41b-4143-8b10-550cd5704f32.jpg"
+      ],
+      "created_at": "2025-03-23T10:25:53.864462"
+    },
+    {
+      "product_id": "prod-7f453c75",
+      "name": "Riggs, Laptop Standard",
+      "description": "High-performance laptop. Synchronized neutral framework",
+      "price": 1138.15,
+      "stock_quantity": 52,
+      "category": "Electronics",
+      "image_urls": [
+        "https://example.com/images/f05db76e-1a84-451a-a9d3-d7c7ee87905e.jpg"
+      ],
+      "created_at": "2025-09-16T10:25:53.864629"
+    },
+    {
+      "product_id": "prod-f2216b1c",
+      "name": "Baker Smartphone Standard",
+      "description": "Latest smartphone. User-friendly neutral collaboration",
+      "price": 1162.8,
+      "stock_quantity": 72,
+      "category": "Electronics",
+      "image_urls": [
+        "https://example.com/images/35ebd32d-9ad6-40ab-8821-2ddb45b89cd9.jpg"
+      ],
+      "created_at": "2025-12-07T10:25:53.864706"
+    },
+    {
+      "product_id": "prod-4b1b4fff",
+      "name": "Cooper, Tablet Standard",
+      "description": "Portable tablet. Profit-focused mobile extranet",
+      "price": 494.49,
+      "stock_quantity": 7,
+      "category": "Electronics",
+      "image_urls": [
+        "https://example.com/images/0d01280f-d89a-40c0-a87d-1c78e7c421c7.jpg"
+      ],
+      "created_at": "2025-10-11T10:25:53.864877"
+    },
+    {
+      "product_id": "prod-76b109b0",
+      "name": "Walters Headphones Max",
+      "description": "Wireless headphones. Balanced 24hour groupware",
+      "price": 357.55,
+      "stock_quantity": 44,
+      "category": "Electronics",
+      "image_urls": [
+        "https://example.com/images/fad409e2-a319-4cb4-a17d-65a0c56811cd.jpg"
+      ],
+      "created_at": "2025-08-07T10:25:53.864953"
+    },
+    {
+      "product_id": "prod-6dbcac3c",
+      "name": "Martin-Ramos Monitor Pro",
+      "description": "4K display monitor. Triple-buffered interactive open architecture",
+      "price": 344.52,
+      "stock_quantity": 77,
+      "category": "Electronics",
+      "image_urls": [
+        "https://example.com/images/f1eedba3-1343-4e61-9ca3-c4480279b6a6.jpg"
+      ],
+      "created_at": "2025-10-28T10:25:53.865075"
+    },
+    {
+      "product_id": "prod-01769e89",
+      "name": "Mckee, Keyboard Pro",
+      "description": "Mechanical keyboard. Reduced neutral circuit",
+      "price": 154.42,
+      "stock_quantity": 13,
+      "category": "Electronics",
+      "image_urls": [
+        "https://example.com/images/4eea04e7-0ab5-4bde-a0a0-45026e068097.jpg"
+      ],
+      "created_at": "2025-03-10T10:25:53.865242"
+    },
+    {
+      "product_id": "prod-ceff595e",
+      "name": "Nolan-Flynn Mouse Premium",
+      "description": "Gaming mouse. Balanced heuristic database",
+      "price": 36.35,
+      "stock_quantity": 89,
+      "category": "Electronics",
+      "image_urls": [
+        "https://example.com/images/1a50aec3-aabc-45fa-bfe1-2e47ae9bec36.jpg"
+      ],
+      "created_at": "2025-04-08T10:25:53.865365"
+    },
+    {
+      "product_id": "prod-a132645d",
+      "name": "Deleon-Henson Webcam Standard",
+      "description": "HD webcam. Open-source regional synergy",
+      "price": 83.03,
+      "stock_quantity": 72,
+      "category": "Electronics",
+      "image_urls": [
+        "https://example.com/images/3c9ad14c-ee0c-4eb5-acfe-db992790cebd.jpg"
+      ],
+      "created_at": "2025-01-31T10:25:53.865484"
+    },
+    {
+      "product_id": "prod-bcc95a46",
+      "name": "Cherry Smartwatch Ultra",
+      "description": "Fitness smartwatch. Open-source 4thgeneration conglomeration",
+      "price": 585.75,
+      "stock_quantity": 74,
+      "category": "Electronics",
+      "image_urls": [
+        "https://example.com/images/c84a7b28-550a-4b46-acab-3301bc8f7d29.jpg"
+      ],
+      "created_at": "2025-08-27T10:25:53.865559"
+    },
+    {
+      "product_id": "prod-d19a63fd",
+      "name": "Pham-Shields Speaker Classic",
+      "description": "Bluetooth speaker. Fully-configurable encompassing complexity",
+      "price": 224.69,
+      "stock_quantity": 90,
+      "category": "Electronics",
+      "image_urls": [
+        "https://example.com/images/61ee411a-1bac-47a7-b386-f7a4c991603f.jpg"
+      ],
+      "created_at": "2025-01-09T10:25:53.865679"
+    }
+  ],
+  "customers": [
+    {
+      "customer_id": "cust-001",
+      "email": "demo1@example.com",
+      "given_name": "Monica",
+      "family_name": "Garrison",
+      "shipping_address": {
+        "street": "75433 Donna Locks",
+        "city": "Joshualand",
+        "state": "WI",
+        "zip_code": "37086",
+        "country": "USA"
+      },
+      "payment_methods": [
+        {
+          "type": "credit_card",
+          "last_four": "1962",
+          "brand": "Mastercard"
+        }
+      ],
+      "created_at": "2024-04-18T10:25:53.865932",
+      "cognito_user_id": ""
+    },
+    {
+      "customer_id": "cust-002",
+      "email": "demo2@example.com",
+      "given_name": "Michael",
+      "family_name": "Hartman",
+      "shipping_address": {
+        "street": "816 Jonathan Station Suite 088",
+        "city": "West Ryan",
+        "state": "TN",
+        "zip_code": "43780",
+        "country": "USA"
+      },
+      "payment_methods": [
+        {
+          "type": "credit_card",
+          "last_four": "3663",
+          "brand": "Amex"
+        }
+      ],
+      "created_at": "2024-04-04T10:25:53.866154",
+      "cognito_user_id": ""
+    },
+    {
+      "customer_id": "cust-003",
+      "email": "demo3@example.com",
+      "given_name": "Erica",
+      "family_name": "Orr",
+      "shipping_address": {
+        "street": "8044 Russell Prairie Suite 777",
+        "city": "New Thomas",
+        "state": "MH",
+        "zip_code": "96964",
+        "country": "USA"
+      },
+      "payment_methods": [
+        {
+          "type": "credit_card",
+          "last_four": "0379",
+          "brand": "Visa"
+        }
+      ],
+      "created_at": "2024-10-30T10:25:53.866369",
+      "cognito_user_id": ""
+    },
+    {
+      "customer_id": "cust-004",
+      "email": "demo4@example.com",
+      "given_name": "Cheryl",
+      "family_name": "Mack",
+      "shipping_address": {
+        "street": "9367 Sanchez Shoal Apt. 163",
+        "city": "Port Susan",
+        "state": "NC",
+        "zip_code": "61390",
+        "country": "USA"
+      },
+      "payment_methods": [
+        {
+          "type": "credit_card",
+          "last_four": "7882",
+          "brand": "Visa"
+        }
+      ],
+      "created_at": "2025-05-06T10:25:53.866589",
+      "cognito_user_id": ""
+    },
+    {
+      "customer_id": "cust-005",
+      "email": "demo5@example.com",
+      "given_name": "Caitlin",
+      "family_name": "Dodson",
+      "shipping_address": {
+        "street": "868 Merritt Summit Suite 743",
+        "city": "Katiehaven",
+        "state": "NM",
+        "zip_code": "82650",
+        "country": "USA"
+      },
+      "payment_methods": [
+        {
+          "type": "credit_card",
+          "last_four": "1229",
+          "brand": "Mastercard"
+        }
+      ],
+      "created_at": "2025-06-19T10:25:53.866816",
+      "cognito_user_id": ""
+    },
+    {
+      "customer_id": "cust-006",
+      "email": "demo6@example.com",
+      "given_name": "Jesse",
+      "family_name": "Benson",
+      "shipping_address": {
+        "street": "66587 Brown Village",
+        "city": "Priceshire",
+        "state": "UT",
+        "zip_code": "03061",
+        "country": "USA"
+      },
+      "payment_methods": [
+        {
+          "type": "credit_card",
+          "last_four": "7347",
+          "brand": "Amex"
+        }
+      ],
+      "created_at": "2024-11-17T10:25:53.867053",
+      "cognito_user_id": ""
+    },
+    {
+      "customer_id": "cust-007",
+      "email": "demo7@example.com",
+      "given_name": "Ryan",
+      "family_name": "Johnson",
+      "shipping_address": {
+        "street": "627 Tina Place Apt. 699",
+        "city": "North Dawnberg",
+        "state": "VI",
+        "zip_code": "61016",
+        "country": "USA"
+      },
+      "payment_methods": [
+        {
+          "type": "credit_card",
+          "last_four": "1708",
+          "brand": "Amex"
+        }
+      ],
+      "created_at": "2024-11-27T10:25:53.867279",
+      "cognito_user_id": ""
+    },
+    {
+      "customer_id": "cust-008",
+      "email": "demo8@example.com",
+      "given_name": "Kaitlyn",
+      "family_name": "Williams",
+      "shipping_address": {
+        "street": "10033 Christine Garden Apt. 719",
+        "city": "South Holly",
+        "state": "WI",
+        "zip_code": "48852",
+        "country": "USA"
+      },
+      "payment_methods": [
+        {
+          "type": "credit_card",
+          "last_four": "9315",
+          "brand": "Visa"
+        }
+      ],
+      "created_at": "2025-04-29T10:25:53.867483",
+      "cognito_user_id": ""
+    },
+    {
+      "customer_id": "cust-009",
+      "email": "demo9@example.com",
+      "given_name": "Heidi",
+      "family_name": "Turner",
+      "shipping_address": {
+        "street": "058 Stanley Cliff",
+        "city": "Alexanderchester",
+        "state": "GU",
+        "zip_code": "64752",
+        "country": "USA"
+      },
+      "payment_methods": [
+        {
+          "type": "credit_card",
+          "last_four": "7692",
+          "brand": "Amex"
+        }
+      ],
+      "created_at": "2025-05-11T10:25:53.867698",
+      "cognito_user_id": ""
+    },
+    {
+      "customer_id": "cust-010",
+      "email": "demo10@example.com",
+      "given_name": "Joseph",
+      "family_name": "Christian",
+      "shipping_address": {
+        "street": "7379 Rogers Park",
+        "city": "Hunterborough",
+        "state": "MI",
+        "zip_code": "34363",
+        "country": "USA"
+      },
+      "payment_methods": [
+        {
+          "type": "credit_card",
+          "last_four": "7831",
+          "brand": "Visa"
+        }
+      ],
+      "created_at": "2025-05-02T10:25:53.867942",
+      "cognito_user_id": ""
+    }
+  ],
+  "orders": [
+    {
+      "order_id": "ord-a7ced828a2",
+      "customer_id": "cust-001",
+      "product_id": "prod-3c95c58b",
+      "quantity": 2,
+      "unit_price": 744.4,
+      "total_price": 1488.8,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "75433 Donna Locks",
+        "city": "Joshualand",
+        "state": "WI",
+        "zip_code": "37086",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "1962",
+        "brand": "Mastercard"
+      },
+      "created_at": "2025-12-18T10:25:53.867961",
+      "delivered_at": "2025-12-24T10:25:53.867961"
+    },
+    {
+      "order_id": "ord-ea33339c7b",
+      "customer_id": "cust-001",
+      "product_id": "prod-f2d7f5a4",
+      "quantity": 2,
+      "unit_price": 46.3,
+      "total_price": 92.6,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "75433 Donna Locks",
+        "city": "Joshualand",
+        "state": "WI",
+        "zip_code": "37086",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "1962",
+        "brand": "Mastercard"
+      },
+      "created_at": "2025-07-18T10:25:53.867980",
+      "delivered_at": "2025-07-23T10:25:53.867980"
+    },
+    {
+      "order_id": "ord-7ee5781e4f",
+      "customer_id": "cust-001",
+      "product_id": "prod-7424207a",
+      "quantity": 3,
+      "unit_price": 104.25,
+      "total_price": 312.75,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "75433 Donna Locks",
+        "city": "Joshualand",
+        "state": "WI",
+        "zip_code": "37086",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "1962",
+        "brand": "Mastercard"
+      },
+      "created_at": "2025-12-03T10:25:53.867998",
+      "delivered_at": "2025-12-10T10:25:53.867998"
+    },
+    {
+      "order_id": "ord-17c9db268a",
+      "customer_id": "cust-001",
+      "product_id": "prod-5a1e8d72",
+      "quantity": 3,
+      "unit_price": 20.87,
+      "total_price": 62.61,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "75433 Donna Locks",
+        "city": "Joshualand",
+        "state": "WI",
+        "zip_code": "37086",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "1962",
+        "brand": "Mastercard"
+      },
+      "created_at": "2025-09-06T10:25:53.868008",
+      "delivered_at": "2025-09-09T10:25:53.868008"
+    },
+    {
+      "order_id": "ord-559d43c16c",
+      "customer_id": "cust-001",
+      "product_id": "prod-9f283dfd",
+      "quantity": 2,
+      "unit_price": 11.82,
+      "total_price": 23.64,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "75433 Donna Locks",
+        "city": "Joshualand",
+        "state": "WI",
+        "zip_code": "37086",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "1962",
+        "brand": "Mastercard"
+      },
+      "created_at": "2025-11-18T10:25:53.868017",
+      "delivered_at": "2025-11-20T10:25:53.868017"
+    },
+    {
+      "order_id": "ord-30dfcbe429",
+      "customer_id": "cust-002",
+      "product_id": "prod-b865eb96",
+      "quantity": 3,
+      "unit_price": 48.66,
+      "total_price": 145.98,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "816 Jonathan Station Suite 088",
+        "city": "West Ryan",
+        "state": "TN",
+        "zip_code": "43780",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "3663",
+        "brand": "Amex"
+      },
+      "created_at": "2025-09-17T10:25:53.868029",
+      "delivered_at": "2025-09-21T10:25:53.868029"
+    },
+    {
+      "order_id": "ord-98390fe510",
+      "customer_id": "cust-002",
+      "product_id": "prod-63dab766",
+      "quantity": 2,
+      "unit_price": 53.68,
+      "total_price": 107.36,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "816 Jonathan Station Suite 088",
+        "city": "West Ryan",
+        "state": "TN",
+        "zip_code": "43780",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "3663",
+        "brand": "Amex"
+      },
+      "created_at": "2025-09-08T10:25:53.868038",
+      "delivered_at": "2025-09-15T10:25:53.868038"
+    },
+    {
+      "order_id": "ord-98d410f584",
+      "customer_id": "cust-002",
+      "product_id": "prod-2ee67004",
+      "quantity": 3,
+      "unit_price": 197.67,
+      "total_price": 593.01,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "816 Jonathan Station Suite 088",
+        "city": "West Ryan",
+        "state": "TN",
+        "zip_code": "43780",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "3663",
+        "brand": "Amex"
+      },
+      "created_at": "2025-07-22T10:25:53.868045",
+      "delivered_at": "2025-07-29T10:25:53.868045"
+    },
+    {
+      "order_id": "ord-a22706213e",
+      "customer_id": "cust-002",
+      "product_id": "prod-b865eb96",
+      "quantity": 1,
+      "unit_price": 48.66,
+      "total_price": 48.66,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "816 Jonathan Station Suite 088",
+        "city": "West Ryan",
+        "state": "TN",
+        "zip_code": "43780",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "3663",
+        "brand": "Amex"
+      },
+      "created_at": "2025-09-24T10:25:53.868053",
+      "delivered_at": "2025-10-01T10:25:53.868053"
+    },
+    {
+      "order_id": "ord-0f241d599b",
+      "customer_id": "cust-002",
+      "product_id": "prod-c9d0e828",
+      "quantity": 1,
+      "unit_price": 96.83,
+      "total_price": 96.83,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "816 Jonathan Station Suite 088",
+        "city": "West Ryan",
+        "state": "TN",
+        "zip_code": "43780",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "3663",
+        "brand": "Amex"
+      },
+      "created_at": "2025-11-03T10:25:53.868061",
+      "delivered_at": "2025-11-06T10:25:53.868061"
+    },
+    {
+      "order_id": "ord-139e70fc81",
+      "customer_id": "cust-003",
+      "product_id": "prod-14c4e0d3",
+      "quantity": 3,
+      "unit_price": 164.89,
+      "total_price": 494.67,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "8044 Russell Prairie Suite 777",
+        "city": "New Thomas",
+        "state": "MH",
+        "zip_code": "96964",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "0379",
+        "brand": "Visa"
+      },
+      "created_at": "2025-09-13T10:25:53.868070",
+      "delivered_at": "2025-09-16T10:25:53.868070"
+    },
+    {
+      "order_id": "ord-75c113a9d3",
+      "customer_id": "cust-003",
+      "product_id": "prod-63dab766",
+      "quantity": 1,
+      "unit_price": 53.68,
+      "total_price": 53.68,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "8044 Russell Prairie Suite 777",
+        "city": "New Thomas",
+        "state": "MH",
+        "zip_code": "96964",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "0379",
+        "brand": "Visa"
+      },
+      "created_at": "2025-10-26T10:25:53.868077",
+      "delivered_at": "2025-10-31T10:25:53.868077"
+    },
+    {
+      "order_id": "ord-e988cd430d",
+      "customer_id": "cust-003",
+      "product_id": "prod-f2d7f5a4",
+      "quantity": 1,
+      "unit_price": 46.3,
+      "total_price": 46.3,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "8044 Russell Prairie Suite 777",
+        "city": "New Thomas",
+        "state": "MH",
+        "zip_code": "96964",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "0379",
+        "brand": "Visa"
+      },
+      "created_at": "2025-09-14T10:25:53.868085",
+      "delivered_at": "2025-09-20T10:25:53.868085"
+    },
+    {
+      "order_id": "ord-750bc13c71",
+      "customer_id": "cust-003",
+      "product_id": "prod-b865eb96",
+      "quantity": 1,
+      "unit_price": 48.66,
+      "total_price": 48.66,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "8044 Russell Prairie Suite 777",
+        "city": "New Thomas",
+        "state": "MH",
+        "zip_code": "96964",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "0379",
+        "brand": "Visa"
+      },
+      "created_at": "2025-07-23T10:25:53.868093",
+      "delivered_at": "2025-07-29T10:25:53.868093"
+    },
+    {
+      "order_id": "ord-e8f1597e58",
+      "customer_id": "cust-003",
+      "product_id": "prod-e9075764",
+      "quantity": 1,
+      "unit_price": 989.26,
+      "total_price": 989.26,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "8044 Russell Prairie Suite 777",
+        "city": "New Thomas",
+        "state": "MH",
+        "zip_code": "96964",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "0379",
+        "brand": "Visa"
+      },
+      "created_at": "2025-11-06T10:25:53.868100",
+      "delivered_at": "2025-11-09T10:25:53.868100"
+    },
+    {
+      "order_id": "ord-651e03c406",
+      "customer_id": "cust-004",
+      "product_id": "prod-28b1e3fc",
+      "quantity": 2,
+      "unit_price": 85.72,
+      "total_price": 171.44,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "9367 Sanchez Shoal Apt. 163",
+        "city": "Port Susan",
+        "state": "NC",
+        "zip_code": "61390",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "7882",
+        "brand": "Visa"
+      },
+      "created_at": "2025-09-04T10:25:53.868111",
+      "delivered_at": "2025-09-07T10:25:53.868111"
+    },
+    {
+      "order_id": "ord-afb93aabe9",
+      "customer_id": "cust-004",
+      "product_id": "prod-d3f9367b",
+      "quantity": 1,
+      "unit_price": 444.95,
+      "total_price": 444.95,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "9367 Sanchez Shoal Apt. 163",
+        "city": "Port Susan",
+        "state": "NC",
+        "zip_code": "61390",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "7882",
+        "brand": "Visa"
+      },
+      "created_at": "2025-11-24T10:25:53.868119",
+      "delivered_at": "2025-11-29T10:25:53.868119"
+    },
+    {
+      "order_id": "ord-4513ba5398",
+      "customer_id": "cust-004",
+      "product_id": "prod-e9075764",
+      "quantity": 2,
+      "unit_price": 989.26,
+      "total_price": 1978.52,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "9367 Sanchez Shoal Apt. 163",
+        "city": "Port Susan",
+        "state": "NC",
+        "zip_code": "61390",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "7882",
+        "brand": "Visa"
+      },
+      "created_at": "2025-10-30T10:25:53.868127",
+      "delivered_at": "2025-11-04T10:25:53.868127"
+    },
+    {
+      "order_id": "ord-fa5bf719b9",
+      "customer_id": "cust-004",
+      "product_id": "prod-0ffd63f7",
+      "quantity": 2,
+      "unit_price": 47.78,
+      "total_price": 95.56,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "9367 Sanchez Shoal Apt. 163",
+        "city": "Port Susan",
+        "state": "NC",
+        "zip_code": "61390",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "7882",
+        "brand": "Visa"
+      },
+      "created_at": "2025-07-11T10:25:53.868134",
+      "delivered_at": "2025-07-18T10:25:53.868134"
+    },
+    {
+      "order_id": "ord-bdbf4d3147",
+      "customer_id": "cust-004",
+      "product_id": "prod-13fbdf7a",
+      "quantity": 3,
+      "unit_price": 25.2,
+      "total_price": 75.6,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "9367 Sanchez Shoal Apt. 163",
+        "city": "Port Susan",
+        "state": "NC",
+        "zip_code": "61390",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "7882",
+        "brand": "Visa"
+      },
+      "created_at": "2025-09-03T10:25:53.868142",
+      "delivered_at": "2025-09-06T10:25:53.868142"
+    },
+    {
+      "order_id": "ord-8d1c97d01f",
+      "customer_id": "cust-005",
+      "product_id": "prod-14c4e0d3",
+      "quantity": 2,
+      "unit_price": 164.89,
+      "total_price": 329.78,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "868 Merritt Summit Suite 743",
+        "city": "Katiehaven",
+        "state": "NM",
+        "zip_code": "82650",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "1229",
+        "brand": "Mastercard"
+      },
+      "created_at": "2025-11-11T10:25:53.868149",
+      "delivered_at": "2025-11-13T10:25:53.868149"
+    },
+    {
+      "order_id": "ord-1861b18a61",
+      "customer_id": "cust-005",
+      "product_id": "prod-78d34925",
+      "quantity": 3,
+      "unit_price": 67.92,
+      "total_price": 203.76,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "868 Merritt Summit Suite 743",
+        "city": "Katiehaven",
+        "state": "NM",
+        "zip_code": "82650",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "1229",
+        "brand": "Mastercard"
+      },
+      "created_at": "2025-08-20T10:25:53.868157",
+      "delivered_at": "2025-08-22T10:25:53.868157"
+    },
+    {
+      "order_id": "ord-3bf3fb97b0",
+      "customer_id": "cust-005",
+      "product_id": "prod-a132645d",
+      "quantity": 2,
+      "unit_price": 83.03,
+      "total_price": 166.06,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "868 Merritt Summit Suite 743",
+        "city": "Katiehaven",
+        "state": "NM",
+        "zip_code": "82650",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "1229",
+        "brand": "Mastercard"
+      },
+      "created_at": "2025-12-22T10:25:53.868164",
+      "delivered_at": "2025-12-24T10:25:53.868164"
+    },
+    {
+      "order_id": "ord-9df671dd39",
+      "customer_id": "cust-005",
+      "product_id": "prod-78d34925",
+      "quantity": 2,
+      "unit_price": 67.92,
+      "total_price": 135.84,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "868 Merritt Summit Suite 743",
+        "city": "Katiehaven",
+        "state": "NM",
+        "zip_code": "82650",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "1229",
+        "brand": "Mastercard"
+      },
+      "created_at": "2025-08-30T10:25:53.868172",
+      "delivered_at": "2025-09-05T10:25:53.868172"
+    },
+    {
+      "order_id": "ord-0cd75622dc",
+      "customer_id": "cust-005",
+      "product_id": "prod-e6619ea4",
+      "quantity": 1,
+      "unit_price": 27.04,
+      "total_price": 27.04,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "868 Merritt Summit Suite 743",
+        "city": "Katiehaven",
+        "state": "NM",
+        "zip_code": "82650",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "1229",
+        "brand": "Mastercard"
+      },
+      "created_at": "2025-08-28T10:25:53.868179",
+      "delivered_at": "2025-08-30T10:25:53.868179"
+    },
+    {
+      "order_id": "ord-acf5ad8100",
+      "customer_id": "cust-006",
+      "product_id": "prod-f39d6364",
+      "quantity": 1,
+      "unit_price": 76.75,
+      "total_price": 76.75,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "66587 Brown Village",
+        "city": "Priceshire",
+        "state": "UT",
+        "zip_code": "03061",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "7347",
+        "brand": "Amex"
+      },
+      "created_at": "2025-08-06T10:25:53.868194",
+      "delivered_at": "2025-08-08T10:25:53.868194"
+    },
+    {
+      "order_id": "ord-23cfc1c706",
+      "customer_id": "cust-006",
+      "product_id": "prod-76b109b0",
+      "quantity": 1,
+      "unit_price": 357.55,
+      "total_price": 357.55,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "66587 Brown Village",
+        "city": "Priceshire",
+        "state": "UT",
+        "zip_code": "03061",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "7347",
+        "brand": "Amex"
+      },
+      "created_at": "2025-09-24T10:25:53.868202",
+      "delivered_at": "2025-09-26T10:25:53.868202"
+    },
+    {
+      "order_id": "ord-9896f17943",
+      "customer_id": "cust-006",
+      "product_id": "prod-5a1e8d72",
+      "quantity": 1,
+      "unit_price": 20.87,
+      "total_price": 20.87,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "66587 Brown Village",
+        "city": "Priceshire",
+        "state": "UT",
+        "zip_code": "03061",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "7347",
+        "brand": "Amex"
+      },
+      "created_at": "2025-08-10T10:25:53.868210",
+      "delivered_at": "2025-08-16T10:25:53.868210"
+    },
+    {
+      "order_id": "ord-e511d75a82",
+      "customer_id": "cust-006",
+      "product_id": "prod-3c95c58b",
+      "quantity": 3,
+      "unit_price": 744.4,
+      "total_price": 2233.2,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "66587 Brown Village",
+        "city": "Priceshire",
+        "state": "UT",
+        "zip_code": "03061",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "7347",
+        "brand": "Amex"
+      },
+      "created_at": "2025-12-16T10:25:53.868220",
+      "delivered_at": "2025-12-21T10:25:53.868220"
+    },
+    {
+      "order_id": "ord-73892277f7",
+      "customer_id": "cust-006",
+      "product_id": "prod-4b1b4fff",
+      "quantity": 3,
+      "unit_price": 494.49,
+      "total_price": 1483.47,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "66587 Brown Village",
+        "city": "Priceshire",
+        "state": "UT",
+        "zip_code": "03061",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "7347",
+        "brand": "Amex"
+      },
+      "created_at": "2025-08-14T10:25:53.868227",
+      "delivered_at": "2025-08-20T10:25:53.868227"
+    },
+    {
+      "order_id": "ord-a436c8e467",
+      "customer_id": "cust-007",
+      "product_id": "prod-aab90f7b",
+      "quantity": 2,
+      "unit_price": 113.96,
+      "total_price": 227.92,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "627 Tina Place Apt. 699",
+        "city": "North Dawnberg",
+        "state": "VI",
+        "zip_code": "61016",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "1708",
+        "brand": "Amex"
+      },
+      "created_at": "2025-11-14T10:25:53.868235",
+      "delivered_at": "2025-11-21T10:25:53.868235"
+    },
+    {
+      "order_id": "ord-412912a2b7",
+      "customer_id": "cust-007",
+      "product_id": "prod-01769e89",
+      "quantity": 2,
+      "unit_price": 154.42,
+      "total_price": 308.84,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "627 Tina Place Apt. 699",
+        "city": "North Dawnberg",
+        "state": "VI",
+        "zip_code": "61016",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "1708",
+        "brand": "Amex"
+      },
+      "created_at": "2025-11-05T10:25:53.868243",
+      "delivered_at": "2025-11-09T10:25:53.868243"
+    },
+    {
+      "order_id": "ord-6b0b1bbf92",
+      "customer_id": "cust-007",
+      "product_id": "prod-d3f9367b",
+      "quantity": 1,
+      "unit_price": 444.95,
+      "total_price": 444.95,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "627 Tina Place Apt. 699",
+        "city": "North Dawnberg",
+        "state": "VI",
+        "zip_code": "61016",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "1708",
+        "brand": "Amex"
+      },
+      "created_at": "2025-07-18T10:25:53.868250",
+      "delivered_at": "2025-07-25T10:25:53.868250"
+    },
+    {
+      "order_id": "ord-3f3fa8cf18",
+      "customer_id": "cust-007",
+      "product_id": "prod-8a1ee423",
+      "quantity": 2,
+      "unit_price": 29.05,
+      "total_price": 58.1,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "627 Tina Place Apt. 699",
+        "city": "North Dawnberg",
+        "state": "VI",
+        "zip_code": "61016",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "1708",
+        "brand": "Amex"
+      },
+      "created_at": "2025-10-17T10:25:53.868258",
+      "delivered_at": "2025-10-19T10:25:53.868258"
+    },
+    {
+      "order_id": "ord-e1c1d55f49",
+      "customer_id": "cust-007",
+      "product_id": "prod-e9075764",
+      "quantity": 2,
+      "unit_price": 989.26,
+      "total_price": 1978.52,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "627 Tina Place Apt. 699",
+        "city": "North Dawnberg",
+        "state": "VI",
+        "zip_code": "61016",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "1708",
+        "brand": "Amex"
+      },
+      "created_at": "2025-07-30T10:25:53.868265",
+      "delivered_at": "2025-08-05T10:25:53.868265"
+    },
+    {
+      "order_id": "ord-da30f22b6c",
+      "customer_id": "cust-008",
+      "product_id": "prod-b865eb96",
+      "quantity": 1,
+      "unit_price": 48.66,
+      "total_price": 48.66,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "10033 Christine Garden Apt. 719",
+        "city": "South Holly",
+        "state": "WI",
+        "zip_code": "48852",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "9315",
+        "brand": "Visa"
+      },
+      "created_at": "2025-08-21T10:25:53.868275",
+      "delivered_at": "2025-08-24T10:25:53.868275"
+    },
+    {
+      "order_id": "ord-b8ead7d389",
+      "customer_id": "cust-008",
+      "product_id": "prod-1180683e",
+      "quantity": 2,
+      "unit_price": 16.59,
+      "total_price": 33.18,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "10033 Christine Garden Apt. 719",
+        "city": "South Holly",
+        "state": "WI",
+        "zip_code": "48852",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "9315",
+        "brand": "Visa"
+      },
+      "created_at": "2025-12-03T10:25:53.868283",
+      "delivered_at": "2025-12-07T10:25:53.868283"
+    },
+    {
+      "order_id": "ord-8bbb810a14",
+      "customer_id": "cust-008",
+      "product_id": "prod-13608432",
+      "quantity": 1,
+      "unit_price": 339.6,
+      "total_price": 339.6,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "10033 Christine Garden Apt. 719",
+        "city": "South Holly",
+        "state": "WI",
+        "zip_code": "48852",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "9315",
+        "brand": "Visa"
+      },
+      "created_at": "2025-10-03T10:25:53.868290",
+      "delivered_at": "2025-10-07T10:25:53.868290"
+    },
+    {
+      "order_id": "ord-ec3405efa9",
+      "customer_id": "cust-008",
+      "product_id": "prod-e6619ea4",
+      "quantity": 2,
+      "unit_price": 27.04,
+      "total_price": 54.08,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "10033 Christine Garden Apt. 719",
+        "city": "South Holly",
+        "state": "WI",
+        "zip_code": "48852",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "9315",
+        "brand": "Visa"
+      },
+      "created_at": "2025-08-19T10:25:53.868298",
+      "delivered_at": "2025-08-26T10:25:53.868298"
+    },
+    {
+      "order_id": "ord-0f44349422",
+      "customer_id": "cust-008",
+      "product_id": "prod-8a1ee423",
+      "quantity": 3,
+      "unit_price": 29.05,
+      "total_price": 87.15,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "10033 Christine Garden Apt. 719",
+        "city": "South Holly",
+        "state": "WI",
+        "zip_code": "48852",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "9315",
+        "brand": "Visa"
+      },
+      "created_at": "2025-07-22T10:25:53.868305",
+      "delivered_at": "2025-07-28T10:25:53.868305"
+    },
+    {
+      "order_id": "ord-fcfdd43fd2",
+      "customer_id": "cust-009",
+      "product_id": "prod-e9075764",
+      "quantity": 3,
+      "unit_price": 989.26,
+      "total_price": 2967.78,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "058 Stanley Cliff",
+        "city": "Alexanderchester",
+        "state": "GU",
+        "zip_code": "64752",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "7692",
+        "brand": "Amex"
+      },
+      "created_at": "2025-08-17T10:25:53.868313",
+      "delivered_at": "2025-08-21T10:25:53.868313"
+    },
+    {
+      "order_id": "ord-b9fbe099a0",
+      "customer_id": "cust-009",
+      "product_id": "prod-4b1b4fff",
+      "quantity": 1,
+      "unit_price": 494.49,
+      "total_price": 494.49,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "058 Stanley Cliff",
+        "city": "Alexanderchester",
+        "state": "GU",
+        "zip_code": "64752",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "7692",
+        "brand": "Amex"
+      },
+      "created_at": "2025-12-02T10:25:53.868320",
+      "delivered_at": "2025-12-06T10:25:53.868320"
+    },
+    {
+      "order_id": "ord-d954acbbf2",
+      "customer_id": "cust-009",
+      "product_id": "prod-35df77f5",
+      "quantity": 1,
+      "unit_price": 223.86,
+      "total_price": 223.86,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "058 Stanley Cliff",
+        "city": "Alexanderchester",
+        "state": "GU",
+        "zip_code": "64752",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "7692",
+        "brand": "Amex"
+      },
+      "created_at": "2025-08-17T10:25:53.868328",
+      "delivered_at": "2025-08-20T10:25:53.868328"
+    },
+    {
+      "order_id": "ord-3bdd70f74b",
+      "customer_id": "cust-009",
+      "product_id": "prod-ddbfef6f",
+      "quantity": 2,
+      "unit_price": 158.16,
+      "total_price": 316.32,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "058 Stanley Cliff",
+        "city": "Alexanderchester",
+        "state": "GU",
+        "zip_code": "64752",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "7692",
+        "brand": "Amex"
+      },
+      "created_at": "2025-08-04T10:25:53.868335",
+      "delivered_at": "2025-08-07T10:25:53.868335"
+    },
+    {
+      "order_id": "ord-9b0564c273",
+      "customer_id": "cust-009",
+      "product_id": "prod-01769e89",
+      "quantity": 2,
+      "unit_price": 154.42,
+      "total_price": 308.84,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "058 Stanley Cliff",
+        "city": "Alexanderchester",
+        "state": "GU",
+        "zip_code": "64752",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "7692",
+        "brand": "Amex"
+      },
+      "created_at": "2025-11-14T10:25:53.868343",
+      "delivered_at": "2025-11-21T10:25:53.868343"
+    },
+    {
+      "order_id": "ord-59f57c271d",
+      "customer_id": "cust-010",
+      "product_id": "prod-7f453c75",
+      "quantity": 2,
+      "unit_price": 1138.15,
+      "total_price": 2276.3,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "7379 Rogers Park",
+        "city": "Hunterborough",
+        "state": "MI",
+        "zip_code": "34363",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "7831",
+        "brand": "Visa"
+      },
+      "created_at": "2025-08-29T10:25:53.868352",
+      "delivered_at": "2025-09-03T10:25:53.868352"
+    },
+    {
+      "order_id": "ord-b58444128b",
+      "customer_id": "cust-010",
+      "product_id": "prod-624321e3",
+      "quantity": 1,
+      "unit_price": 38.14,
+      "total_price": 38.14,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "7379 Rogers Park",
+        "city": "Hunterborough",
+        "state": "MI",
+        "zip_code": "34363",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "7831",
+        "brand": "Visa"
+      },
+      "created_at": "2025-12-13T10:25:53.868360",
+      "delivered_at": "2025-12-20T10:25:53.868360"
+    },
+    {
+      "order_id": "ord-b1fb09580b",
+      "customer_id": "cust-010",
+      "product_id": "prod-63dab766",
+      "quantity": 2,
+      "unit_price": 53.68,
+      "total_price": 107.36,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "7379 Rogers Park",
+        "city": "Hunterborough",
+        "state": "MI",
+        "zip_code": "34363",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "7831",
+        "brand": "Visa"
+      },
+      "created_at": "2025-12-25T10:25:53.868368",
+      "delivered_at": "2025-12-27T10:25:53.868368"
+    },
+    {
+      "order_id": "ord-e06fb00225",
+      "customer_id": "cust-010",
+      "product_id": "prod-c9d0e828",
+      "quantity": 1,
+      "unit_price": 96.83,
+      "total_price": 96.83,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "7379 Rogers Park",
+        "city": "Hunterborough",
+        "state": "MI",
+        "zip_code": "34363",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "7831",
+        "brand": "Visa"
+      },
+      "created_at": "2025-07-26T10:25:53.868375",
+      "delivered_at": "2025-07-30T10:25:53.868375"
+    },
+    {
+      "order_id": "ord-b1890ae639",
+      "customer_id": "cust-010",
+      "product_id": "prod-e6619ea4",
+      "quantity": 3,
+      "unit_price": 27.04,
+      "total_price": 81.12,
+      "status": "delivered",
+      "shipping_address": {
+        "street": "7379 Rogers Park",
+        "city": "Hunterborough",
+        "state": "MI",
+        "zip_code": "34363",
+        "country": "USA"
+      },
+      "payment_method": {
+        "type": "credit_card",
+        "last_four": "7831",
+        "brand": "Visa"
+      },
+      "created_at": "2025-09-14T10:25:53.868382",
+      "delivered_at": "2025-09-20T10:25:53.868382"
+    }
+  ],
+  "reviews": [
+    {
+      "review_id": "rev-6a324c3242",
+      "product_id": "prod-5a1e8d72",
+      "customer_id": "cust-001",
+      "order_id": "ord-17c9db268a",
+      "rating": 5,
+      "title": "Love it!",
+      "review_text": "Great Silva, History Pro. Position make society behavior develop reality fill. Hard network gas you nearly goal law fill.",
+      "verified_purchase": true,
+      "created_at": "2025-09-11T10:25:53.868008"
+    },
+    {
+      "review_id": "rev-fded91f33e",
+      "product_id": "prod-3c95c58b",
+      "customer_id": "cust-001",
+      "order_id": "ord-a7ced828a2",
+      "rating": 5,
+      "title": "Highly recommended!",
+      "review_text": "Great Gonzalez, Tablet Classic. Building court build movie several. Course school everybody operation.",
+      "verified_purchase": true,
+      "created_at": "2026-01-11T10:25:53.867961"
+    },
+    {
+      "review_id": "rev-216fceea64",
+      "product_id": "prod-9f283dfd",
+      "customer_id": "cust-001",
+      "order_id": "ord-559d43c16c",
+      "rating": 4,
+      "title": "Very good",
+      "review_text": "Good Novak Fiction Novel Ultra. Others wonder strategy fast guess few remain.",
+      "verified_purchase": true,
+      "created_at": "2025-11-25T10:25:53.868017"
+    },
+    {
+      "review_id": "rev-dff6fbdec9",
+      "product_id": "prod-7424207a",
+      "customer_id": "cust-001",
+      "order_id": "ord-7ee5781e4f",
+      "rating": 4,
+      "title": "Very good",
+      "review_text": "Good Snyder, Sneakers Premium. Ever window network recently.",
+      "verified_purchase": true,
+      "created_at": "2025-12-22T10:25:53.867998"
+    },
+    {
+      "review_id": "rev-b0164c5927",
+      "product_id": "prod-f2d7f5a4",
+      "customer_id": "cust-001",
+      "order_id": "ord-ea33339c7b",
+      "rating": 4,
+      "title": "Good product",
+      "review_text": "Good Frazier Sweater Premium. Point sell bill activity.",
+      "verified_purchase": true,
+      "created_at": "2025-07-30T10:25:53.867980"
+    },
+    {
+      "review_id": "rev-3f6ac6e62d",
+      "product_id": "prod-b865eb96",
+      "customer_id": "cust-002",
+      "order_id": "ord-30dfcbe429",
+      "rating": 3,
+      "title": "Decent",
+      "review_text": "Okay Bush Mouse Ultra. Light key continue anything wait.",
+      "verified_purchase": true,
+      "created_at": "2025-10-19T10:25:53.868029"
+    },
+    {
+      "review_id": "rev-f41477691d",
+      "product_id": "prod-2ee67004",
+      "customer_id": "cust-002",
+      "order_id": "ord-98d410f584",
+      "rating": 3,
+      "title": "Decent",
+      "review_text": "Okay Wolfe Headphones Standard. Box assume man officer rather charge specific.",
+      "verified_purchase": true,
+      "created_at": "2025-08-24T10:25:53.868045"
+    },
+    {
+      "review_id": "rev-ce20084c9e",
+      "product_id": "prod-b865eb96",
+      "customer_id": "cust-002",
+      "order_id": "ord-a22706213e",
+      "rating": 3,
+      "title": "Decent",
+      "review_text": "Okay Bush Mouse Ultra. Be easy newspaper indicate other.",
+      "verified_purchase": true,
+      "created_at": "2025-10-30T10:25:53.868053"
+    },
+    {
+      "review_id": "rev-73fe79135e",
+      "product_id": "prod-63dab766",
+      "customer_id": "cust-002",
+      "order_id": "ord-98390fe510",
+      "rating": 4,
+      "title": "Good product",
+      "review_text": "Good Nunez Pillow Classic. Difficult mission late kind team wrong figure perform.",
+      "verified_purchase": true,
+      "created_at": "2025-09-16T10:25:53.868038"
+    },
+    {
+      "review_id": "rev-6855e9c851",
+      "product_id": "prod-c9d0e828",
+      "customer_id": "cust-002",
+      "order_id": "ord-0f241d599b",
+      "rating": 5,
+      "title": "Love it!",
+      "review_text": "Great Martin, Blender Classic. Whether between several personal enough ball dream necessary. Able late order fact.",
+      "verified_purchase": true,
+      "created_at": "2025-12-06T10:25:53.868061"
+    },
+    {
+      "review_id": "rev-5dbf3b10d5",
+      "product_id": "prod-b865eb96",
+      "customer_id": "cust-003",
+      "order_id": "ord-750bc13c71",
+      "rating": 4,
+      "title": "Very good",
+      "review_text": "Good Bush Mouse Ultra. Explain executive teacher author do.",
+      "verified_purchase": true,
+      "created_at": "2025-08-26T10:25:53.868093"
+    },
+    {
+      "review_id": "rev-1fc257ad64",
+      "product_id": "prod-63dab766",
+      "customer_id": "cust-003",
+      "order_id": "ord-75c113a9d3",
+      "rating": 4,
+      "title": "Good product",
+      "review_text": "Good Nunez Pillow Classic. Skin person product value interesting.",
+      "verified_purchase": true,
+      "created_at": "2025-11-08T10:25:53.868077"
+    },
+    {
+      "review_id": "rev-91c01c4829",
+      "product_id": "prod-e9075764",
+      "customer_id": "cust-003",
+      "order_id": "ord-e8f1597e58",
+      "rating": 4,
+      "title": "Satisfied",
+      "review_text": "Good Rodriguez, Laptop Classic. Different chance enter central arrive society organization.",
+      "verified_purchase": true,
+      "created_at": "2025-11-21T10:25:53.868100"
+    },
+    {
+      "review_id": "rev-ad18f00a1d",
+      "product_id": "prod-14c4e0d3",
+      "customer_id": "cust-003",
+      "order_id": "ord-139e70fc81",
+      "rating": 3,
+      "title": "Decent",
+      "review_text": "Okay Hoffman, Jacket Pro. Tv keep light fight I evening music.",
+      "verified_purchase": true,
+      "created_at": "2025-09-24T10:25:53.868070"
+    },
+    {
+      "review_id": "rev-b187b79ee4",
+      "product_id": "prod-f2d7f5a4",
+      "customer_id": "cust-003",
+      "order_id": "ord-e988cd430d",
+      "rating": 3,
+      "title": "Decent",
+      "review_text": "Okay Frazier Sweater Premium. Ball always it focus economy before.",
+      "verified_purchase": true,
+      "created_at": "2025-10-12T10:25:53.868085"
+    },
+    {
+      "review_id": "rev-64c65f5aae",
+      "product_id": "prod-d3f9367b",
+      "customer_id": "cust-004",
+      "order_id": "ord-afb93aabe9",
+      "rating": 4,
+      "title": "Nice quality",
+      "review_text": "Good Ryan Desk Plus. Onto again share start office several compare.",
+      "verified_purchase": true,
+      "created_at": "2025-12-11T10:25:53.868119"
+    },
+    {
+      "review_id": "rev-1f1bd7b6fa",
+      "product_id": "prod-0ffd63f7",
+      "customer_id": "cust-004",
+      "order_id": "ord-fa5bf719b9",
+      "rating": 5,
+      "title": "Amazing quality!",
+      "review_text": "Great Farmer-Ryan Hat Classic. Prepare trouble consider one play man before. Impact fly bit claim in many.",
+      "verified_purchase": true,
+      "created_at": "2025-08-14T10:25:53.868134"
+    },
+    {
+      "review_id": "rev-38a7d38dac",
+      "product_id": "prod-13fbdf7a",
+      "customer_id": "cust-004",
+      "order_id": "ord-bdbf4d3147",
+      "rating": 4,
+      "title": "Very good",
+      "review_text": "Good Powell Science Premium. Spend nearly lawyer fire follow wife.",
+      "verified_purchase": true,
+      "created_at": "2025-09-07T10:25:53.868142"
+    },
+    {
+      "review_id": "rev-00c53c9284",
+      "product_id": "prod-e9075764",
+      "customer_id": "cust-004",
+      "order_id": "ord-4513ba5398",
+      "rating": 4,
+      "title": "Satisfied",
+      "review_text": "Good Rodriguez, Laptop Classic. Ten stay ability thank left approach.",
+      "verified_purchase": true,
+      "created_at": "2025-11-10T10:25:53.868127"
+    },
+    {
+      "review_id": "rev-d89f6af2cc",
+      "product_id": "prod-28b1e3fc",
+      "customer_id": "cust-004",
+      "order_id": "ord-651e03c406",
+      "rating": 3,
+      "title": "Decent",
+      "review_text": "Okay Lee-Davis Rug Ultra. Gun series personal service data near until.",
+      "verified_purchase": true,
+      "created_at": "2025-09-11T10:25:53.868111"
+    },
+    {
+      "review_id": "rev-6a7db8663b",
+      "product_id": "prod-e6619ea4",
+      "customer_id": "cust-005",
+      "order_id": "ord-0cd75622dc",
+      "rating": 5,
+      "title": "Excellent product!",
+      "review_text": "Great Perez T-Shirt Premium. Thing machine ahead picture son report. Nearly need behavior yeah tree.",
+      "verified_purchase": true,
+      "created_at": "2025-09-16T10:25:53.868179"
+    },
+    {
+      "review_id": "rev-54a0290f9f",
+      "product_id": "prod-78d34925",
+      "customer_id": "cust-005",
+      "order_id": "ord-9df671dd39",
+      "rating": 4,
+      "title": "Good product",
+      "review_text": "Good Powers Art Book Pro. Water positive child usually factor relate indeed.",
+      "verified_purchase": true,
+      "created_at": "2025-10-04T10:25:53.868172"
+    },
+    {
+      "review_id": "rev-f89c3f3d4a",
+      "product_id": "prod-78d34925",
+      "customer_id": "cust-005",
+      "order_id": "ord-1861b18a61",
+      "rating": 4,
+      "title": "Nice quality",
+      "review_text": "Good Powers Art Book Pro. Woman during necessary himself two meet these.",
+      "verified_purchase": true,
+      "created_at": "2025-08-24T10:25:53.868157"
+    },
+    {
+      "review_id": "rev-f87eb0c80a",
+      "product_id": "prod-a132645d",
+      "customer_id": "cust-005",
+      "order_id": "ord-3bf3fb97b0",
+      "rating": 3,
+      "title": "Decent",
+      "review_text": "Okay Deleon-Henson Webcam Standard. Everybody so increase various.",
+      "verified_purchase": true,
+      "created_at": "2026-01-10T10:25:53.868164"
+    },
+    {
+      "review_id": "rev-cbd20f8848",
+      "product_id": "prod-14c4e0d3",
+      "customer_id": "cust-005",
+      "order_id": "ord-8d1c97d01f",
+      "rating": 5,
+      "title": "Highly recommended!",
+      "review_text": "Great Hoffman, Jacket Pro. Environment able rise study oil process tend. Mrs generation necessary myself lay focus country.",
+      "verified_purchase": true,
+      "created_at": "2025-12-05T10:25:53.868149"
+    },
+    {
+      "review_id": "rev-979bc2548c",
+      "product_id": "prod-5a1e8d72",
+      "customer_id": "cust-006",
+      "order_id": "ord-9896f17943",
+      "rating": 5,
+      "title": "Excellent product!",
+      "review_text": "Great Silva, History Pro. Occur do simply analysis seat. History professional star wonder manager already.",
+      "verified_purchase": true,
+      "created_at": "2025-09-13T10:25:53.868210"
+    },
+    {
+      "review_id": "rev-81cff9a749",
+      "product_id": "prod-3c95c58b",
+      "customer_id": "cust-006",
+      "order_id": "ord-e511d75a82",
+      "rating": 5,
+      "title": "Love it!",
+      "review_text": "Great Gonzalez, Tablet Classic. Whole forward beyond suddenly between treat address. Improve pressure child light.",
+      "verified_purchase": true,
+      "created_at": "2026-01-19T10:25:53.868220"
+    },
+    {
+      "review_id": "rev-f57bb6f797",
+      "product_id": "prod-f39d6364",
+      "customer_id": "cust-006",
+      "order_id": "ord-acf5ad8100",
+      "rating": 5,
+      "title": "Perfect!",
+      "review_text": "Great Walter, Jeans Classic. Full realize power system system. Here first responsibility service their along attention.",
+      "verified_purchase": true,
+      "created_at": "2025-08-18T10:25:53.868194"
+    },
+    {
+      "review_id": "rev-8c2401f754",
+      "product_id": "prod-76b109b0",
+      "customer_id": "cust-006",
+      "order_id": "ord-23cfc1c706",
+      "rating": 4,
+      "title": "Satisfied",
+      "review_text": "Good Walters Headphones Max. Range explain dinner bed within set region beyond.",
+      "verified_purchase": true,
+      "created_at": "2025-10-09T10:25:53.868202"
+    },
+    {
+      "review_id": "rev-87017c0530",
+      "product_id": "prod-4b1b4fff",
+      "customer_id": "cust-006",
+      "order_id": "ord-73892277f7",
+      "rating": 5,
+      "title": "Highly recommended!",
+      "review_text": "Great Cooper, Tablet Standard. Really tough animal someone. Grow issue each include radio.",
+      "verified_purchase": true,
+      "created_at": "2025-08-25T10:25:53.868227"
+    },
+    {
+      "review_id": "rev-c7a499eb12",
+      "product_id": "prod-8a1ee423",
+      "customer_id": "cust-007",
+      "order_id": "ord-3f3fa8cf18",
+      "rating": 4,
+      "title": "Very good",
+      "review_text": "Good Hickman Scarf Standard. Color bad that people.",
+      "verified_purchase": true,
+      "created_at": "2025-11-06T10:25:53.868258"
+    },
+    {
+      "review_id": "rev-17cc0f8397",
+      "product_id": "prod-e9075764",
+      "customer_id": "cust-007",
+      "order_id": "ord-e1c1d55f49",
+      "rating": 4,
+      "title": "Good product",
+      "review_text": "Good Rodriguez, Laptop Classic. Marriage on discussion point least.",
+      "verified_purchase": true,
+      "created_at": "2025-08-15T10:25:53.868265"
+    },
+    {
+      "review_id": "rev-32640a2f2a",
+      "product_id": "prod-d3f9367b",
+      "customer_id": "cust-007",
+      "order_id": "ord-6b0b1bbf92",
+      "rating": 4,
+      "title": "Satisfied",
+      "review_text": "Good Ryan Desk Plus. Together let explain.",
+      "verified_purchase": true,
+      "created_at": "2025-08-20T10:25:53.868250"
+    },
+    {
+      "review_id": "rev-990401143e",
+      "product_id": "prod-aab90f7b",
+      "customer_id": "cust-007",
+      "order_id": "ord-a436c8e467",
+      "rating": 4,
+      "title": "Nice quality",
+      "review_text": "Good Dennis Coffee Maker Plus. Citizen kid generation onto police interesting economic.",
+      "verified_purchase": true,
+      "created_at": "2025-12-06T10:25:53.868235"
+    },
+    {
+      "review_id": "rev-4faebfe96f",
+      "product_id": "prod-01769e89",
+      "customer_id": "cust-007",
+      "order_id": "ord-412912a2b7",
+      "rating": 5,
+      "title": "Amazing quality!",
+      "review_text": "Great Mckee, Keyboard Pro. Current his low down occur. Fast recognize against stop how account ten.",
+      "verified_purchase": true,
+      "created_at": "2025-11-16T10:25:53.868243"
+    },
+    {
+      "review_id": "rev-aa59924dfc",
+      "product_id": "prod-e6619ea4",
+      "customer_id": "cust-008",
+      "order_id": "ord-ec3405efa9",
+      "rating": 5,
+      "title": "Amazing quality!",
+      "review_text": "Great Perez T-Shirt Premium. Treat seat strategy. Simply discover soon despite couple.",
+      "verified_purchase": true,
+      "created_at": "2025-09-17T10:25:53.868298"
+    },
+    {
+      "review_id": "rev-21e0456608",
+      "product_id": "prod-1180683e",
+      "customer_id": "cust-008",
+      "order_id": "ord-b8ead7d389",
+      "rating": 4,
+      "title": "Good product",
+      "review_text": "Good Bernard, Cookbook Standard. Question return process stuff pick.",
+      "verified_purchase": true,
+      "created_at": "2025-12-10T10:25:53.868283"
+    },
+    {
+      "review_id": "rev-073c72223e",
+      "product_id": "prod-13608432",
+      "customer_id": "cust-008",
+      "order_id": "ord-8bbb810a14",
+      "rating": 5,
+      "title": "Highly recommended!",
+      "review_text": "Great James Monitor Plus. Position final kid often run bed far section. Customer skill theory hand.",
+      "verified_purchase": true,
+      "created_at": "2025-10-17T10:25:53.868290"
+    },
+    {
+      "review_id": "rev-4f46abc755",
+      "product_id": "prod-b865eb96",
+      "customer_id": "cust-008",
+      "order_id": "ord-da30f22b6c",
+      "rating": 3,
+      "title": "Decent",
+      "review_text": "Okay Bush Mouse Ultra. Tree store either station loss southern second.",
+      "verified_purchase": true,
+      "created_at": "2025-08-29T10:25:53.868275"
+    },
+    {
+      "review_id": "rev-d2f4969688",
+      "product_id": "prod-8a1ee423",
+      "customer_id": "cust-008",
+      "order_id": "ord-0f44349422",
+      "rating": 3,
+      "title": "Decent",
+      "review_text": "Okay Hickman Scarf Standard. Sound life away senior difficult put.",
+      "verified_purchase": true,
+      "created_at": "2025-07-30T10:25:53.868305"
+    },
+    {
+      "review_id": "rev-4b0eb82a49",
+      "product_id": "prod-4b1b4fff",
+      "customer_id": "cust-009",
+      "order_id": "ord-b9fbe099a0",
+      "rating": 4,
+      "title": "Good product",
+      "review_text": "Good Cooper, Tablet Standard. Whose source hand so add Mr.",
+      "verified_purchase": true,
+      "created_at": "2026-01-04T10:25:53.868320"
+    },
+    {
+      "review_id": "rev-bda6e9f491",
+      "product_id": "prod-ddbfef6f",
+      "customer_id": "cust-009",
+      "order_id": "ord-3bdd70f74b",
+      "rating": 5,
+      "title": "Perfect!",
+      "review_text": "Great Gill, Boots Max. Happy see energy herself police he push. Agent this no trip determine as statement.",
+      "verified_purchase": true,
+      "created_at": "2025-08-30T10:25:53.868335"
+    },
+    {
+      "review_id": "rev-2746d8be02",
+      "product_id": "prod-35df77f5",
+      "customer_id": "cust-009",
+      "order_id": "ord-d954acbbf2",
+      "rating": 4,
+      "title": "Good product",
+      "review_text": "Good Delacruz Webcam Premium. Power bring animal also you.",
+      "verified_purchase": true,
+      "created_at": "2025-09-02T10:25:53.868328"
+    },
+    {
+      "review_id": "rev-57ceef55e6",
+      "product_id": "prod-e9075764",
+      "customer_id": "cust-009",
+      "order_id": "ord-fcfdd43fd2",
+      "rating": 3,
+      "title": "Decent",
+      "review_text": "Okay Rodriguez, Laptop Classic. Best thought career law.",
+      "verified_purchase": true,
+      "created_at": "2025-09-11T10:25:53.868313"
+    },
+    {
+      "review_id": "rev-cda46ebf5a",
+      "product_id": "prod-01769e89",
+      "customer_id": "cust-009",
+      "order_id": "ord-9b0564c273",
+      "rating": 5,
+      "title": "Excellent product!",
+      "review_text": "Great Mckee, Keyboard Pro. Industry score choice increase between majority impact. Allow have kitchen wear talk.",
+      "verified_purchase": true,
+      "created_at": "2025-11-22T10:25:53.868343"
+    },
+    {
+      "review_id": "rev-e11df66dfc",
+      "product_id": "prod-c9d0e828",
+      "customer_id": "cust-010",
+      "order_id": "ord-e06fb00225",
+      "rating": 5,
+      "title": "Excellent product!",
+      "review_text": "Great Martin, Blender Classic. Wonder happen top population. Huge couple business summer.",
+      "verified_purchase": true,
+      "created_at": "2025-08-07T10:25:53.868375"
+    },
+    {
+      "review_id": "rev-7c1fe2f835",
+      "product_id": "prod-624321e3",
+      "customer_id": "cust-010",
+      "order_id": "ord-b58444128b",
+      "rating": 4,
+      "title": "Nice quality",
+      "review_text": "Good Carter Shorts Max. Begin deep police wife anything four writer.",
+      "verified_purchase": true,
+      "created_at": "2025-12-25T10:25:53.868360"
+    },
+    {
+      "review_id": "rev-039e3cc552",
+      "product_id": "prod-7f453c75",
+      "customer_id": "cust-010",
+      "order_id": "ord-59f57c271d",
+      "rating": 5,
+      "title": "Amazing quality!",
+      "review_text": "Great Riggs, Laptop Standard. Day stop never only spend do similar. Able teach certain candidate economy company produce ago.",
+      "verified_purchase": true,
+      "created_at": "2025-09-20T10:25:53.868352"
+    },
+    {
+      "review_id": "rev-669ffadc68",
+      "product_id": "prod-e6619ea4",
+      "customer_id": "cust-010",
+      "order_id": "ord-b1890ae639",
+      "rating": 5,
+      "title": "Perfect!",
+      "review_text": "Great Perez T-Shirt Premium. Group small open. Company appear score.",
+      "verified_purchase": true,
+      "created_at": "2025-10-01T10:25:53.868382"
+    },
+    {
+      "review_id": "rev-21a36e2209",
+      "product_id": "prod-63dab766",
+      "customer_id": "cust-010",
+      "order_id": "ord-b1fb09580b",
+      "rating": 5,
+      "title": "Amazing quality!",
+      "review_text": "Great Nunez Pillow Classic. Box as large gun order later develop. Analysis situation term miss leader who article look.",
+      "verified_purchase": true,
+      "created_at": "2026-01-23T10:25:53.868368"
+    }
+  ],
+  "returns": [
+    {
+      "return_id": "ret-fbda4ae7ee",
+      "order_id": "ord-e511d75a82",
+      "customer_id": "cust-006",
+      "product_id": "prod-3c95c58b",
+      "reason": "Defective product",
+      "status": "requested",
+      "created_at": "2025-12-30T10:25:53.868220",
+      "processed_at": null
+    },
+    {
+      "return_id": "ret-cf35ac6706",
+      "order_id": "ord-b8ead7d389",
+      "customer_id": "cust-008",
+      "product_id": "prod-1180683e",
+      "reason": "Wrong item received",
+      "status": "requested",
+      "created_at": "2026-01-03T10:25:53.868283",
+      "processed_at": null
+    },
+    {
+      "return_id": "ret-661fa602a0",
+      "order_id": "ord-b1fb09580b",
+      "customer_id": "cust-010",
+      "product_id": "prod-63dab766",
+      "reason": "Better price elsewhere",
+      "status": "requested",
+      "created_at": "2026-01-21T10:25:53.868368",
+      "processed_at": null
+    },
+    {
+      "return_id": "ret-ce1313bdc7",
+      "order_id": "ord-7ee5781e4f",
+      "customer_id": "cust-001",
+      "product_id": "prod-7424207a",
+      "reason": "Defective product",
+      "status": "requested",
+      "created_at": "2025-12-26T10:25:53.867998",
+      "processed_at": null
+    },
+    {
+      "return_id": "ret-735dbacc2c",
+      "order_id": "ord-3bf3fb97b0",
+      "customer_id": "cust-005",
+      "product_id": "prod-a132645d",
+      "reason": "Not as described",
+      "status": "requested",
+      "created_at": "2026-01-02T10:25:53.868164",
+      "processed_at": null
+    },
+    {
+      "return_id": "ret-1474edfe49",
+      "order_id": "ord-b58444128b",
+      "customer_id": "cust-010",
+      "product_id": "prod-624321e3",
+      "reason": "Wrong item received",
+      "status": "requested",
+      "created_at": "2025-12-23T10:25:53.868360",
+      "processed_at": null
+    },
+    {
+      "return_id": "ret-f5de51b2ac",
+      "order_id": "ord-a7ced828a2",
+      "customer_id": "cust-001",
+      "product_id": "prod-3c95c58b",
+      "reason": "Wrong item received",
+      "status": "requested",
+      "created_at": "2026-01-01T10:25:53.867961",
+      "processed_at": null
+    }
+  ],
+  "metadata": {
+    "generated_at": "2026-01-06T10:25:53.869630",
+    "total_products": 50,
+    "total_customers": 10,
+    "total_orders": 50,
+    "total_reviews": 50,
+    "total_returns": 7
+  }
+}
