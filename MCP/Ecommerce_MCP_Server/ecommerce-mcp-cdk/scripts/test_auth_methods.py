@@ -1,16 +1,21 @@
 #!/usr/bin/env python3
 """
-Authentication Testing Script for E-Commerce MCP Server
+Authentication and Runtime Testing Script for E-Commerce MCP Server
 
-Tests both OAuth 2.0 and USER_PASSWORD_AUTH flows with Cognito.
+Tests OAuth 2.0 token acquisition and AgentCore Runtime invocation.
 
 Usage:
-    python test_auth_methods.py [--region us-west-2] [--email demo1@example.com]
+    python test_auth_methods.py --runtime-arn <AgentCore Runtime ARN> \
+        [--region us-west-2] [--email demo1@example.com]
 """
 
 import argparse
-import boto3
 import base64
+import json
+import urllib.parse
+import uuid
+import boto3
+import requests
 from botocore.exceptions import ClientError
 
 
@@ -30,19 +35,22 @@ def get_cognito_config(region):
                 config['client_id'] = output['OutputValue']
 
         if 'user_pool_id' not in config or 'client_id' not in config:
-            print("❌ Error: Missing Cognito configuration in stack outputs")
+            print("Error: Missing Cognito configuration in stack outputs")
             return None
 
         return config
 
     except ClientError as e:
-        print(f"❌ Error getting Cognito configuration: {e}")
+        print(f"Error getting Cognito configuration: {e}")
         return None
 
 
-def test_user_password_auth(cognito, client_id, email, password):
-    """Test USER_PASSWORD_AUTH flow (for Basic Auth)"""
-    print("\nTest 1: USER_PASSWORD_AUTH Flow (Direct Authentication)")
+def get_access_token(cognito, client_id, email, password):
+    """
+    Obtain a Cognito access token via USER_PASSWORD_AUTH.
+    Returns (access_token, success_bool).
+    """
+    print("\nStep 1: Obtain Cognito Access Token")
     print("-" * 60)
 
     try:
@@ -51,64 +59,37 @@ def test_user_password_auth(cognito, client_id, email, password):
             AuthFlow='USER_PASSWORD_AUTH',
             AuthParameters={
                 'USERNAME': email,
-                'PASSWORD': password
-            }
+                'PASSWORD': password,
+            },
         )
 
-        if 'AuthenticationResult' in response:
-            access_token = response['AuthenticationResult']['AccessToken']
-            id_token = response['AuthenticationResult']['IdToken']
-            expires_in = response['AuthenticationResult']['ExpiresIn']
+        if 'AuthenticationResult' not in response:
+            print("No authentication result returned")
+            return None, False
 
-            print(f"✓ Authentication successful!")
-            print(f"  Access token: {access_token[:50]}...")
-            print(f"  ID token: {id_token[:50]}...")
-            print(f"  Expires in: {expires_in} seconds")
+        access_token = response['AuthenticationResult']['AccessToken']
+        expires_in = response['AuthenticationResult']['ExpiresIn']
 
-            # Decode and display token claims
-            token_payload = access_token.split('.')[1]
-            # Add padding if needed
-            token_payload += '=' * (4 - len(token_payload) % 4)
-            decoded = base64.b64decode(token_payload)
-            print(f"  Token payload (truncated): {decoded[:100]}...")
+        print(f"Authentication successful")
+        print(f"  Access token: {access_token[:50]}...")
+        print(f"  Expires in: {expires_in} seconds")
 
-            return True
-        else:
-            print("❌ No authentication result returned")
-            return False
+        return access_token, True
 
     except ClientError as e:
-        print(f"❌ Authentication failed: {e.response['Error']['Message']}")
-        return False
-
-
-def test_basic_auth_header(email, password):
-    """Test Basic Auth header encoding (for MCP server)"""
-    print("\nTest 2: Basic Auth Header Encoding")
-    print("-" * 60)
-
-    credentials = f"{email}:{password}"
-    encoded = base64.b64encode(credentials.encode()).decode()
-    auth_header = f"Basic {encoded}"
-
-    print(f"✓ Basic Auth header generated:")
-    print(f"  Authorization: {auth_header}")
-    print(f"\n  This header can be used with the MCP server's flexible auth middleware")
-
-    return True
+        print(f"Authentication failed: {e.response['Error']['Message']}")
+        return None, False
 
 
 def test_token_validation(cognito, access_token):
-    """Test token validation"""
-    print("\nTest 3: Token Validation")
+    """Validate the token and display user attributes."""
+    print("\nStep 2: Validate Token / Inspect custom:customer_id")
     print("-" * 60)
 
     try:
-        response = cognito.get_user(
-            AccessToken=access_token
-        )
+        response = cognito.get_user(AccessToken=access_token)
 
-        print(f"✓ Token is valid")
+        print(f"Token is valid")
         print(f"  Username: {response['Username']}")
         print(f"  User attributes:")
         for attr in response['UserAttributes']:
@@ -118,55 +99,128 @@ def test_token_validation(cognito, access_token):
         return True
 
     except ClientError as e:
-        print(f"❌ Token validation failed: {e}")
+        print(f"Token validation failed: {e}")
         return False
 
 
-def test_oauth_endpoints(region):
-    """Display OAuth 2.0 endpoints for browser flow"""
-    print("\nTest 4: OAuth 2.0 Browser Flow Endpoints")
+def test_agentcore_runtime_invocation(runtime_arn, access_token, region):
+    """
+    Invoke the AgentCore Runtime with a tools/list MCP JSON-RPC request.
+
+    Uses HTTPS + Bearer token: AgentCore validates the JWT at the edge, then
+    forwards the Authorization header to the server (per requestHeaderAllowlist).
+    Confirms the runtime is reachable, the JWT is accepted, and 6 tools are returned.
+    """
+    print("\nStep 3: Invoke AgentCore Runtime (tools/list)")
     print("-" * 60)
 
-    print(f"✓ OAuth endpoints configured:")
-    print(f"  Authorization endpoint:")
-    print(f"    https://ecommerce-mcp-demo.auth.{region}.amazoncognito.com/oauth2/authorize")
-    print(f"\n  Token endpoint:")
-    print(f"    https://ecommerce-mcp-demo.auth.{region}.amazoncognito.com/oauth2/token")
-    print(f"\n  Hosted UI:")
-    print(f"    https://ecommerce-mcp-demo.auth.{region}.amazoncognito.com/login")
-    print(f"\n  These endpoints are used by Claude Desktop for OAuth browser flow")
+    dp_endpoint = f"https://bedrock-agentcore.{region}.amazonaws.com"
+    escaped_arn = urllib.parse.quote(runtime_arn, safe="")
+    url = f"{dp_endpoint}/runtimes/{escaped_arn}/invocations"
+    session_id = str(uuid.uuid4())
 
-    return True
+    headers = {
+        "Content-Type": "application/json",
+        "Accept": "text/event-stream, application/json",
+        "X-Amzn-Bedrock-AgentCore-Runtime-Session-Id": session_id,
+        "Authorization": f"Bearer {access_token}",
+    }
+    body = {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "tools/list",
+        "params": {},
+    }
+
+    try:
+        response = requests.post(
+            url,
+            params={"qualifier": "DEFAULT"},
+            headers=headers,
+            json=body,
+            timeout=60,
+            stream=True,
+        )
+
+        print(f"  HTTP status: {response.status_code}")
+
+        if response.status_code != 200:
+            print(f"  Response: {response.text[:400]}")
+            return False
+
+        # Response is SSE: consume stream and find first data: line
+        result = None
+        for chunk in response.iter_lines():
+            if isinstance(chunk, bytes):
+                chunk = chunk.decode()
+            if chunk.startswith("data:"):
+                result = json.loads(chunk[5:].strip())
+                break
+
+        tools = result.get('result', {}).get('tools', []) if result else []
+        tool_names = [t.get('name') for t in tools]
+
+        print(f"  Runtime responded successfully")
+        print(f"  Tools returned: {len(tools)}")
+        for name in tool_names:
+            print(f"    - {name}")
+
+        expected = {
+            'search_products', 'get_product_reviews',
+            'order_product', 'write_product_review',
+            'get_order_history', 'initiate_return',
+        }
+        if expected == set(tool_names):
+            print("  All 6 expected tools present")
+            return True
+        else:
+            missing = expected - set(tool_names)
+            unexpected = set(tool_names) - expected
+            if missing:
+                print(f"  Missing tools: {missing}")
+            if unexpected:
+                print(f"  Unexpected tools: {unexpected}")
+            return False
+
+    except Exception as e:
+        print(f"AgentCore invocation failed: {e}")
+        return False
 
 
 def main():
     """Main entry point"""
     parser = argparse.ArgumentParser(
-        description="Test authentication methods for E-Commerce MCP Server"
+        description="Test AgentCore Runtime for E-Commerce MCP Server"
+    )
+    parser.add_argument(
+        "--runtime-arn",
+        required=True,
+        help="AgentCore Runtime ARN (from `agentcore launch` output)",
     )
     parser.add_argument(
         "--region",
         default="us-west-2",
-        help="AWS region (default: us-west-2)"
+        help="AWS region (default: us-west-2)",
     )
     parser.add_argument(
         "--email",
         default="demo1@example.com",
-        help="Test user email (default: demo1@example.com)"
+        help="Test user email (default: demo1@example.com)",
     )
     parser.add_argument(
         "--password",
         default="Demo123!",
-        help="Test user password (default: Demo123!)"
+        help="Test user password (default: Demo123!)",
     )
 
     args = parser.parse_args()
 
     print("=" * 70)
-    print("E-Commerce MCP Server - Authentication Testing")
+    print("E-Commerce MCP Server - AgentCore Runtime Testing")
     print("=" * 70)
-    print(f"Region: {args.region}")
-    print(f"Test user: {args.email}")
+    print(f"Region:      {args.region}")
+    print(f"Runtime ARN: {args.runtime_arn}")
+    print(f"Test user:   {args.email}")
 
     # Get Cognito configuration
     print("\nFetching Cognito configuration...")
@@ -174,42 +228,28 @@ def main():
     if not config:
         exit(1)
 
-    print(f"  ✓ User Pool ID: {config['user_pool_id']}")
-    print(f"  ✓ Client ID: {config['client_id']}")
+    print(f"  User Pool ID: {config['user_pool_id']}")
+    print(f"  Client ID:    {config['client_id']}")
 
-    # Initialize Cognito client
     cognito = boto3.client('cognito-idp', region_name=args.region)
 
-    # Run tests
     tests_passed = 0
-    tests_total = 4
+    tests_total = 3
 
-    # Test 1: USER_PASSWORD_AUTH
-    if test_user_password_auth(cognito, config['client_id'], args.email, args.password):
+    # Step 1: Obtain access token
+    access_token, ok = get_access_token(cognito, config['client_id'], args.email, args.password)
+    if ok:
         tests_passed += 1
-        # Save token for validation test
-        response = cognito.initiate_auth(
-            ClientId=config['client_id'],
-            AuthFlow='USER_PASSWORD_AUTH',
-            AuthParameters={
-                'USERNAME': args.email,
-                'PASSWORD': args.password
-            }
-        )
-        access_token = response['AuthenticationResult']['AccessToken']
     else:
-        access_token = None
+        print("\nCannot continue without a valid access token.")
+        exit(1)
 
-    # Test 2: Basic Auth header
-    if test_basic_auth_header(args.email, args.password):
+    # Step 2: Validate token
+    if test_token_validation(cognito, access_token):
         tests_passed += 1
 
-    # Test 3: Token validation
-    if access_token and test_token_validation(cognito, access_token):
-        tests_passed += 1
-
-    # Test 4: OAuth endpoints
-    if test_oauth_endpoints(args.region):
+    # Step 3: Invoke AgentCore Runtime
+    if test_agentcore_runtime_invocation(args.runtime_arn, access_token, args.region):
         tests_passed += 1
 
     # Summary
@@ -218,10 +258,9 @@ def main():
     print("=" * 70)
 
     if tests_passed == tests_total:
-        print("✓ All authentication methods working correctly!")
-        print("\nReady to implement multi-method auth in MCP server")
+        print("All tests passed — AgentCore Runtime is operational.")
     else:
-        print("⚠ Some tests failed. Please review the errors above.")
+        print("Some tests failed. Review the errors above.")
         exit(1)
 
 

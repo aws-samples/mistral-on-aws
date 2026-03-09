@@ -106,6 +106,7 @@ class DynamoDBClient:
         category: Optional[str] = None,
         min_price: Optional[float] = None,
         max_price: Optional[float] = None,
+        in_stock_only: bool = False,
         limit: int = 50
     ) -> List[Dict]:
         """
@@ -116,6 +117,7 @@ class DynamoDBClient:
             category: Filter by category
             min_price: Minimum price
             max_price: Maximum price
+            in_stock_only: If True, only return products with stock_quantity > 0
             limit: Maximum number of results
 
         Returns:
@@ -133,6 +135,9 @@ class DynamoDBClient:
 
             if max_price is not None:
                 filter_expressions.append(Attr('price').lte(Decimal(str(max_price))))
+
+            if in_stock_only:
+                filter_expressions.append(Attr('stock_quantity').gt(0))
 
             # Scan with filters (acceptable for ~50 products)
             scan_kwargs = {}

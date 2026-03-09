@@ -1,105 +1,145 @@
-# E-Commerce MCP Server - CDK Infrastructure
+# E-Commerce MCP Server — CDK Infrastructure
 
-This CDK application deploys the AWS infrastructure for the E-Commerce MCP Server.
+This CDK application deploys the AWS infrastructure for the E-Commerce MCP Server on Amazon Bedrock AgentCore Runtime.
 
-## Architecture
+## Stacks
 
-### Stacks
+### Stack 1: `EcommerceMcpDynamoDBStack`
 
-1. **DynamoDBStack** - 5 DynamoDB tables with 8 Global Secondary Indexes
-   - Products Table
-   - Customers Table (1 GSI: email-index)
-   - Orders Table (2 GSIs: customer_id-created_at-index, customer_id-product_id-index)
-   - Reviews Table (3 GSIs: product_id-created_at-index, product_id-rating-index, customer_id-created_at-index)
-   - Returns Table (2 GSIs: order_id-index, customer_id-created_at-index)
+5 DynamoDB tables with PAY_PER_REQUEST billing:
 
-2. **CognitoStack** - AWS Cognito User Pool for authentication
-   - User Pool with custom attributes (customer_id)
-   - Cognito Hosted UI Domain for OAuth browser flow
-   - App Client supporting OAuth 2.0 and USER_PASSWORD_AUTH
-   - Multi-client support (Claude Desktop, Mistral AI Studio, Strands Agents)
+| Table | Primary Key | GSIs |
+|-------|-------------|------|
+| `ecommerce-products` | `product_id` | — |
+| `ecommerce-customers` | `customer_id` | `email-index` |
+| `ecommerce-orders` | `order_id` | `customer_id-created_at-index`, `customer_id-product_id-index` |
+| `ecommerce-reviews` | `review_id` | `product_id-created_at-index`, `product_id-rating-index`, `customer_id-created_at-index` |
+| `ecommerce-returns` | `return_id` | `order_id-index`, `customer_id-created_at-index` |
 
-3. **DataLoaderStack** - Custom resource for loading synthetic data
-   - Lambda function to populate tables with demo data
-   - Triggers automatically during stack creation
+### Stack 2: `EcommerceMcpCognitoStack`
 
-## Prerequisites
+- **User Pool** (`ecommerce-mcp-users`) with `custom:customer_id` attribute
+- **Hosted UI Domain** (`ecommerce-mcp-demo.auth.<region>.amazoncognito.com`) for browser OAuth flows
+- **App Client** supporting `USER_PASSWORD_AUTH` (for agent/script access) and Authorization Code Grant (for Claude Desktop)
 
-- Python 3.10+
-- Node.js 18+ (for CDK CLI)
-- AWS CLI configured with credentials
-- AWS CDK CLI: `npm install -g aws-cdk`
+Outputs used by AgentCore:
+- `UserPoolId` — identifies the Cognito pool
+- `UserPoolClientId` — used as `allowedClients` in the JWT authorizer
+- `CognitoHostedUIUrl` — base URL for OAuth endpoints
+
+### Stack 3: `EcommerceMcpDataLoaderStack`
+
+Lambda-based custom resource that populates the DynamoDB tables with synthetic demo data (products, customers, orders, reviews, returns) during `cdk deploy`.
+
+### Stack 4: `EcommerceMcpAgentCoreStack`
+
+Supporting infrastructure for the AgentCore Runtime deployment:
+
+**IAM Execution Role** (`AgentCoreExecutionRole`)
+- Trust principal: `bedrock-agentcore.amazonaws.com`
+- DynamoDB: `GetItem`, `PutItem`, `UpdateItem`, `Query`, `Scan` on all 5 tables (+ GSIs)
+- ECR: `GetDownloadUrlForLayer`, `BatchGetImage`, `BatchCheckLayerAvailability`, `GetAuthorizationToken`
+- CloudWatch Logs: `CreateLogGroup`, `CreateLogStream`, `PutLogEvents`
+- Cognito: `cognito-idp:GetUser` (to read `custom:customer_id` from pre-validated tokens)
+
+**ECR Repository** (`ecommerce-mcp-server`)
+- Existing repositories are imported (`from_repository_name`) rather than recreated
+- `agentcore deploy` pushes timestamped image tags here
+
+**SSM Parameters** (consumed by `agentcore configure`):
+
+| Parameter | Value |
+|-----------|-------|
+| `/ecommerce-mcp/execution-role-arn` | IAM execution role ARN |
+| `/ecommerce-mcp/ecr-uri` | ECR repository URI |
+| `/ecommerce-mcp/cognito-discovery-url` | `https://cognito-idp.<region>.amazonaws.com/<pool_id>/.well-known/openid-configuration` |
+| `/ecommerce-mcp/cognito-client-id` | Cognito App Client ID |
+
+**CloudFormation Outputs**: `ExecutionRoleArn`, `EcrUri`, `CognitoDiscoveryUrl`, `CognitoClientId`
+
+---
 
 ## Setup
 
-1. **Create virtual environment and install dependencies:**
-
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-```
 
-2. **Bootstrap CDK (first time only):**
+# Bootstrap CDK (once per account/region)
+cdk bootstrap
 
-```bash
-export AWS_REGION=us-west-2  # Or your preferred region
-cdk bootstrap aws://ACCOUNT_ID/$AWS_REGION
-```
-
-3. **Synthesize CloudFormation templates:**
-
-```bash
+# Synthesize to validate templates
 cdk synth
+
+# Deploy all stacks
+cdk deploy --all --require-approval never
 ```
 
-4. **Deploy all stacks:**
+---
+
+## Stack Dependencies
+
+```
+EcommerceMcpDynamoDBStack
+EcommerceMcpCognitoStack
+        ↓
+EcommerceMcpDataLoaderStack
+EcommerceMcpAgentCoreStack   ← depends on both DynamoDB + Cognito
+```
+
+---
+
+## Outputs Reference
+
+After `cdk deploy --all`, collect the AgentCore stack outputs:
 
 ```bash
-cdk deploy --all
+aws cloudformation describe-stacks \
+  --stack-name EcommerceMcpAgentCoreStack \
+  --query "Stacks[0].Outputs" \
+  --output table
 ```
 
-## Outputs
+Or read from SSM (same values, easier to script):
 
-After deployment, the stack outputs will include:
+```bash
+for p in execution-role-arn ecr-uri cognito-discovery-url cognito-client-id; do
+  echo "/ecommerce-mcp/$p = $(aws ssm get-parameter --name /ecommerce-mcp/$p --query Parameter.Value --output text)"
+done
+```
 
-- DynamoDB table names and ARNs
-- Cognito User Pool ID and Client ID
-- Cognito Hosted UI URLs (authorization, token, userInfo endpoints)
-- Configuration examples for Claude Desktop
+---
 
 ## Cost Estimate
 
-Demo scale (~10 users, <1000 requests/month):
-- DynamoDB: $5-10/month (on-demand pricing)
-- Cognito: Free tier (<1000 MAU)
-- Lambda (DataLoader): Negligible (<1 minute execution)
+Demo scale (~10 users, ~1000 requests/month):
 
-**Total: ~$5-10/month for infrastructure only**
+| Service | Cost |
+|---------|------|
+| DynamoDB (on-demand) | ~$5–10/month |
+| Cognito (<1000 MAU) | Free tier |
+| Lambda (DataLoader, runs once) | Negligible |
+| ECR storage (~200 MB image) | ~$0.02/month |
+| AgentCore Runtime | ~$30–35/month |
+| CodeBuild (first deploy) | ~$0.01 |
 
-(Note: AgentCore Runtime deployment costs additional $30-35/month)
+**Total: ~$35–45/month**
+
+---
 
 ## Cleanup
 
-To delete all resources:
-
 ```bash
+# Destroy all stacks and data
 cdk destroy --all
 ```
 
-**Warning:** This will permanently delete all data in DynamoDB tables.
+**Warning:** `RemovalPolicy.DESTROY` is set on all tables and the ECR repo — all data will be deleted.
 
-## Next Steps
+---
 
-After deploying the CDK stacks:
+## Next Steps After CDK Deploy
 
-1. Load synthetic data: `python data/generate_data.py && python data/load_data.py`
-2. Create Cognito users: `python scripts/create_cognito_users.py`
-3. Deploy MCP server to AgentCore Runtime
-4. Configure MCP clients (Claude Desktop, Mistral AI Studio, etc.)
-
-## Documentation
-
-- [EPCC_PLAN.md](../EPCC_PLAN.md) - Complete implementation plan
-- [EPCC_EXPLORE.md](../EPCC_EXPLORE.md) - Architecture exploration findings
-- [EPCC_PRD.md](../EPCC_PRD.md) - Product requirements document
+1. Create Cognito demo users: `python scripts/create_cognito_users.py`
+2. Configure AgentCore: `agentcore configure ...` (see [USER_GUIDE.md](../USER_GUIDE.md))
+3. Deploy the server: `agentcore deploy`
+4. Validate: `python scripts/test_auth_methods.py --runtime-arn <ARN>`

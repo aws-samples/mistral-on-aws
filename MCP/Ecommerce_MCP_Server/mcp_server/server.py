@@ -3,19 +3,18 @@
 E-Commerce MCP Server - Streamable HTTP Transport
 
 A Model Context Protocol (MCP) server for e-commerce operations using
-streamable HTTP transport. Designed for AI agents like Strands Agents
-and Mistral AI Studio.
+streamable HTTP transport. Hosted on Amazon Bedrock AgentCore Runtime,
+which handles OAuth 2.0 JWT validation at the infrastructure layer.
 
 Features:
 - 6 MCP tools for e-commerce operations
-- AWS Cognito authentication (Bearer token or Basic auth)
+- JWT identity extraction via Cognito get_user (token validated by AgentCore)
 - DynamoDB backend for data persistence
 - Streamable HTTP transport for native MCP protocol
 
 Authentication:
-    Supports Bearer token and Basic auth via Authorization header.
-    - Bearer <token>: Cognito JWT access token (get via /auth/login)
-    - Basic <base64>: Base64-encoded email:password
+    AgentCore Runtime validates the Bearer JWT before forwarding requests.
+    Server reads customer_id from the pre-validated token via Cognito get_user.
 
 Connect with Strands Agent:
     from mcp.client.streamable_http import streamablehttp_client
@@ -23,7 +22,7 @@ Connect with Strands Agent:
 
     mcp_client = MCPClient(
         lambda: streamablehttp_client(
-            url="http://host:8000/mcp",
+            url="https://<agentcore-runtime-endpoint>/mcp",
             headers={"Authorization": f"Bearer {token}"}
         )
     )
@@ -31,8 +30,6 @@ Connect with Strands Agent:
 Environment Variables:
 - PORT: Server port (default: 8000)
 - AWS_REGION: AWS region (default: us-west-2)
-- COGNITO_USER_POOL_ID: Cognito User Pool ID
-- COGNITO_CLIENT_ID: Cognito App Client ID
 - PRODUCTS_TABLE: DynamoDB products table name
 - CUSTOMERS_TABLE: DynamoDB customers table name
 - ORDERS_TABLE: DynamoDB orders table name
@@ -57,7 +54,7 @@ from starlette.routing import Route
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from utils.dynamodb_client import DynamoDBClient
-from utils.auth import authenticate_request, CognitoAuthenticator, AuthenticationError
+from utils.auth import extract_customer_id_from_token
 
 
 # ============================================================================
@@ -92,77 +89,29 @@ db = DynamoDBClient()
 
 
 # ============================================================================
-# Authentication Middleware
+# User Context Middleware
 # ============================================================================
 
-class AuthenticationMiddleware(BaseHTTPMiddleware):
-    """Middleware to authenticate requests and set user context."""
+class UserContextMiddleware(BaseHTTPMiddleware):
+    """Reads customer identity from a Cognito Bearer token.
+
+    - No token / invalid token → anonymous (public tools only)
+    - Valid Bearer token       → calls cognito.get_user() to resolve
+                                 custom:customer_id → all tools available
+    """
 
     async def dispatch(self, request: Request, call_next):
         auth_header = request.headers.get('Authorization')
-
-        if auth_header:
-            try:
-                user_context = await authenticate_request(auth_header)
-                token = current_user_context.set(user_context)
+        if auth_header and auth_header.startswith('Bearer '):
+            token = auth_header[7:]
+            customer_id = extract_customer_id_from_token(token)
+            if customer_id:
+                ctx = current_user_context.set({'customer_id': customer_id})
                 try:
-                    response = await call_next(request)
+                    return await call_next(request)
                 finally:
-                    current_user_context.reset(token)
-                return response
-            except AuthenticationError as e:
-                # Allow anonymous access for public tools
-                pass
-
-        response = await call_next(request)
-        return response
-
-
-# ============================================================================
-# Auth Login Endpoint
-# ============================================================================
-
-async def auth_login(request: Request) -> JSONResponse:
-    """
-    POST /auth/login - Get access token with email/password
-
-    Request body: {"email": "user@example.com", "password": "password"}
-    Response: {"access_token": "...", "token_type": "Bearer", "expires_in": 3600, "customer_id": "..."}
-    """
-    try:
-        body = await request.json()
-        email = body.get('email')
-        password = body.get('password')
-
-        if not email or not password:
-            return JSONResponse(
-                {"error": "Missing email or password"},
-                status_code=400
-            )
-
-        user_pool_id = os.environ.get('COGNITO_USER_POOL_ID')
-        client_id = os.environ.get('COGNITO_CLIENT_ID')
-
-        if not user_pool_id or not client_id:
-            return JSONResponse(
-                {"error": "Authentication not configured"},
-                status_code=500
-            )
-
-        authenticator = CognitoAuthenticator(AWS_REGION, user_pool_id, client_id)
-        result = await authenticator.authenticate_with_password(email, password)
-
-        return JSONResponse({
-            "access_token": result['access_token'],
-            "token_type": "Bearer",
-            "expires_in": result['expires_in'],
-            "customer_id": result['user_context']['customer_id']
-        })
-
-    except AuthenticationError as e:
-        return JSONResponse({"error": str(e)}, status_code=401)
-    except Exception as e:
-        return JSONResponse({"error": f"Login failed: {str(e)}"}, status_code=500)
+                    current_user_context.reset(ctx)
+        return await call_next(request)
 
 
 async def health_check(request: Request) -> JSONResponse:
@@ -185,6 +134,7 @@ def search_products(
     category: str = None,
     min_price: float = None,
     max_price: float = None,
+    in_stock_only: bool = False,
     limit: int = 10
 ) -> dict:
     """
@@ -193,10 +143,14 @@ def search_products(
     PUBLIC - No authentication required.
 
     Args:
-        query: Search keywords (e.g., "laptop", "wireless headphones")
-        category: Filter by category (e.g., "Electronics", "Clothing")
+        query: Search keywords (e.g., "laptop", "wireless headphones").
+               Leave empty to browse all products.
+        category: Filter by category (e.g., "Electronics", "Clothing", "Books", "Home")
         min_price: Minimum price in dollars
         max_price: Maximum price in dollars
+        in_stock_only: If True, only return products with stock_quantity > 0.
+                       Use this when the user asks for "in stock", "available",
+                       or "products I can buy". Do NOT pass "in stock" as a query.
         limit: Maximum number of results (default: 10)
 
     Returns:
@@ -208,6 +162,7 @@ def search_products(
             category=category,
             min_price=min_price,
             max_price=max_price,
+            in_stock_only=in_stock_only,
             limit=limit
         )
         return {"success": True, "count": len(products), "products": products}
@@ -411,7 +366,8 @@ def initiate_return(order_id: str, reason: str) -> dict:
         if order.get('customer_id') != customer_id:
             return {"success": False, "error": "Order does not belong to this customer"}
 
-        existing_return = db.get_return_by_order(order_id)
+        existing_returns = db.get_returns_for_order(order_id)
+        existing_return = existing_returns[0] if existing_returns else None
         if existing_return:
             return {
                 "success": False,
@@ -449,15 +405,14 @@ def initiate_return(order_id: str, reason: str) -> dict:
 
 if __name__ == "__main__":
     print("=" * 70)
-    print("E-Commerce MCP Server")
+    print("E-Commerce MCP Server (AgentCore Runtime)")
     print("=" * 70)
     print(f"Port: {PORT}")
     print(f"Region: {AWS_REGION}")
     print()
     print("Endpoints:")
-    print("  GET  /health      - Health check")
-    print("  POST /auth/login  - Get access token")
-    print("  *    /mcp         - MCP protocol (streamable HTTP)")
+    print("  GET  /health  - Health check")
+    print("  *    /mcp     - MCP protocol (streamable HTTP)")
     print()
     print("MCP Tools:")
     print("  PUBLIC:")
@@ -469,29 +424,13 @@ if __name__ == "__main__":
     print("    - get_order_history")
     print("    - initiate_return")
     print()
-    print("Authentication:")
-    print("  1. Bearer token: Authorization: Bearer <token>")
-    print("  2. Basic auth:   Authorization: Basic <base64(email:password)>")
+    print("Authentication: AgentCore Runtime validates Bearer JWT.")
+    print("  Server calls cognito.get_user() to extract custom:customer_id.")
     print("=" * 70)
 
-    from starlette.applications import Starlette
-    from starlette.routing import Route
-
-    # Get MCP ASGI app configured for /mcp path
-    mcp_app = mcp.http_app(path="/mcp")
-
-    # Add custom routes to the MCP app's router
-    custom_routes = [
-        Route("/health", health_check, methods=["GET"]),
-        Route("/auth/login", auth_login, methods=["POST"]),
-    ]
-
-    # Insert custom routes at the beginning
+    mcp_app = mcp.http_app(path="/mcp", stateless_http=True)
+    custom_routes = [Route("/health", health_check, methods=["GET"])]
     mcp_app.router.routes = custom_routes + list(mcp_app.router.routes)
-
-    # Add authentication middleware
-    mcp_app.add_middleware(AuthenticationMiddleware)
-
-    # Run server
+    mcp_app.add_middleware(UserContextMiddleware)
     import uvicorn
     uvicorn.run(mcp_app, host="0.0.0.0", port=PORT)
