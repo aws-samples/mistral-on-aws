@@ -76,6 +76,16 @@ class CognitoStack(Stack):
             )
         )
 
+        # Force Classic Hosted UI (ManagedLoginVersion=1).
+        # New Cognito User Pools default to Managed Login v2, which requires a
+        # CreateManagedLoginBranding call for every app client before the login
+        # page will render. Programmatically-created app clients (CDK/CLI) have
+        # no branding style by default, so the v2 login page returns HTTP 400.
+        # Setting ManagedLoginVersion=1 uses the classic Hosted UI that renders
+        # without any additional branding configuration.
+        cfn_domain = self.user_pool_domain.node.default_child
+        cfn_domain.add_property_override("ManagedLoginVersion", 1)
+
         # ============================================================
         # App Client (for MCP clients)
         # ============================================================
@@ -100,7 +110,8 @@ class CognitoStack(Stack):
                 callback_urls=[
                     "http://localhost:8080/callback",      # Claude Desktop callback
                     "claudeapp://oauth/callback",          # Claude Desktop custom URI
-                    "https://mistral.ai/oauth/callback",   # Mistral AI Studio (example)
+                    "https://mistral.ai/oauth/callback",   # Mistral AI Studio (legacy)
+                    "https://callback.mistral.ai/v1/integrations_auth/oauth2_callback",  # Mistral AI Studio OAuth2.1
                     "http://localhost:3000/callback"       # Local testing
                 ],
                 logout_urls=[
@@ -113,6 +124,45 @@ class CognitoStack(Stack):
             id_token_validity=Duration.hours(24),
             refresh_token_validity=Duration.days(30),
             prevent_user_existence_errors=True  # Security best practice
+        )
+
+        # ============================================================
+        # App Client for Mistral AI Studio (OAuth 2.1 confidential client)
+        # Requires generate_secret=True for the authorization code exchange
+        # ============================================================
+        self.mistral_client = self.user_pool.add_client(
+            "MistralOAuthClient",
+            user_pool_client_name="mistral-oauth-client",
+            auth_flows=cognito.AuthFlow(
+                user_password=True,   # Required for Cognito Hosted UI login form
+                user_srp=True,        # Required for Cognito Hosted UI login form
+            ),
+            supported_identity_providers=[
+                cognito.UserPoolClientIdentityProvider.COGNITO,
+            ],
+            o_auth=cognito.OAuthSettings(
+                flows=cognito.OAuthFlows(
+                    authorization_code_grant=True,
+                    implicit_code_grant=False,
+                ),
+                scopes=[
+                    cognito.OAuthScope.EMAIL,
+                    cognito.OAuthScope.OPENID,
+                    cognito.OAuthScope.PROFILE,
+                    cognito.OAuthScope.PHONE,
+                ],
+                callback_urls=[
+                    "https://callback.mistral.ai/v1/integrations_auth/oauth2_callback",
+                ],
+                logout_urls=[
+                    "https://callback.mistral.ai/v1/integrations_auth/oauth2_callback",
+                ],
+            ),
+            generate_secret=True,  # Required for OAuth 2.1 confidential client
+            access_token_validity=Duration.hours(24),
+            id_token_validity=Duration.hours(24),
+            refresh_token_validity=Duration.days(30),
+            prevent_user_existence_errors=True,
         )
 
         # ============================================================
@@ -156,6 +206,10 @@ class CognitoStack(Stack):
         CfnOutput(self, "LogoutEndpoint",
                   value=f"https://ecommerce-mcp-demo.auth.{self.region}.amazoncognito.com/logout",
                   description="OAuth 2.0 logout endpoint")
+
+        CfnOutput(self, "MistralOAuthClientId",
+                  value=self.mistral_client.user_pool_client_id,
+                  description="Cognito App Client ID for Mistral AI Studio OAuth 2.1")
 
         # Configuration examples for different clients
         CfnOutput(self, "ClaudeDesktopConfig",

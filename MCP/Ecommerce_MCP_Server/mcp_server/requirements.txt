@@ -1,4 +1,4 @@
-# MCP SDK (official MCP package for streamable-http transport)
+# MCP SDK
 mcp>=1.0.0
 
 # FastMCP framework (required by AgentCore Runtime)
@@ -8,23 +8,13 @@ fastmcp>=0.1.0
 boto3>=1.34.0
 botocore>=1.34.0
 
-# Authentication and JWT handling
-PyJWT>=2.8.0
-python-jose[cryptography]>=3.3.0
-cryptography>=42.0.0
-
-# HTTP requests (for Cognito token validation)
-requests>=2.31.0
-
 # Data validation
 pydantic>=2.5.0
 
-# Environment variables
-python-dotenv>=1.0.0
-
-# Date utilities
-python-dateutil>=2.8.2
-
-# Web framework (FastMCP is built on top of FastAPI/Starlette)
+# Web framework
 fastapi>=0.109.0
 uvicorn[standard]>=0.27.0
+
+# Utilities
+python-dotenv>=1.0.0
+python-dateutil>=2.8.2

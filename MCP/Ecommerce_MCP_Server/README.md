@@ -1,33 +1,55 @@
-# E-Commerce MCP Server
+# E-Commerce MCP Server on Amazon Bedrock AgentCore Runtime
 
-A production-ready MCP (Model Context Protocol) server for e-commerce operations using **streamable HTTP transport**. Designed for AI agents like Strands Agents and Mistral AI Studio.
+A production-ready MCP (Model Context Protocol) server for e-commerce operations, hosted on **Amazon Bedrock AgentCore Runtime** with JWT authentication enforced at the infrastructure layer.
 
 ## Features
 
 ### MCP Tools (6 Tools)
 
-| Tool | Auth Required | Description |
-|------|---------------|-------------|
-| `search_products` | No | Search product catalog by name, category, or price range |
-| `get_product_reviews` | No | Get product reviews with ratings |
-| `order_product` | Yes | Place orders for products |
-| `write_product_review` | Yes | Submit product reviews (1-5 stars) |
-| `get_order_history` | Yes | View your order history |
-| `initiate_return` | Yes | Request returns for orders |
+| Tool | Description |
+|------|-------------|
+| `search_products` | Search catalog by keyword, category, price, or stock availability |
+| `get_product_reviews` | Get product reviews with ratings |
+| `order_product` | Place orders for products |
+| `write_product_review` | Submit product reviews (1-5 stars) |
+| `get_order_history` | View your order history |
+| `initiate_return` | Request returns for orders |
 
-### Authentication
+### Authentication — Handled by AgentCore Runtime
 
-Two authentication methods supported:
+Authentication is enforced **before requests reach the server**. AgentCore Runtime validates:
+- JWT signature (RS256) using Cognito OIDC discovery
+- Token issuer and audience
+- `allowedClients` (Cognito App Client ID)
 
-- **Bearer Token** - Get JWT token from `/auth/login`, pass as `Authorization: Bearer <token>`
-- **Basic Auth** - Pass `Authorization: Basic <base64(email:password)>` header
+If the token is missing or invalid, AgentCore returns `401` before the server code runs. The server reads `custom:customer_id` from the validated token using one of two methods depending on token type:
+- **API Token (USER_PASSWORD_AUTH):** `cognito.get_user(AccessToken=token)` — token includes the required admin scope
+- **OAuth 2.1 (Authorization Code):** decodes the JWT to extract `username` + `user_pool_id`, then calls `cognito.admin_get_user()` via IAM — these tokens carry only OIDC scopes and cannot call `get_user()` directly
+
+**Basic Auth is not supported.** Clients authenticate with a Cognito Bearer JWT.
 
 ### Architecture
 
-- **Streamable HTTP MCP** - Native MCP protocol over HTTP (port 8000)
-- **AWS Cognito** - User authentication and JWT token management
-- **Amazon DynamoDB** - Data persistence (5 tables)
-- **ECS Fargate** - Serverless container deployment
+```
+Client (Strands Agent / Mistral AI Studio)
+    │  Authorization: Bearer <Cognito access token>
+    ▼
+AgentCore Runtime  ←── validates JWT: signature, issuer, audience, allowedClients
+    │               ←── forwards request + Authorization header to server
+    ▼
+UserContextMiddleware (server.py)
+    │  calls cognito.get_user(AccessToken=token) → custom:customer_id
+    ▼
+MCP Tool  →  DynamoDB
+```
+
+**AWS Services:**
+- **Amazon Bedrock AgentCore Runtime** — managed container hosting, JWT auth enforcement, on-demand scaling
+- **AWS CodeBuild** — cloud-side ARM64 image build (no local Docker required)
+- **Amazon ECR** — container image registry
+- **Amazon Cognito** — OAuth 2.0 / OIDC provider (JWT issuer + user attributes)
+- **Amazon DynamoDB** — 5-table data backend (products, customers, orders, reviews, returns)
+- **AWS CloudWatch** — logs and observability
 
 ---
 
@@ -37,51 +59,88 @@ Two authentication methods supported:
 
 - Python 3.10+
 - Node.js 18+ (for CDK)
-- AWS CLI configured with credentials
-- Docker
+- AWS CLI configured with credentials and a bootstrapped CDK environment
+- `bedrock-agentcore-starter-toolkit` CLI: `pip install bedrock-agentcore-starter-toolkit`
 - AWS CDK CLI: `npm install -g aws-cdk`
 
 ### 1. Deploy Infrastructure
 
 ```bash
 cd ecommerce-mcp-cdk
-
-# Install dependencies
-python3 -m venv .venv
-source .venv/bin/activate
 pip install -r requirements.txt
 
 # Bootstrap CDK (first time only)
-export AWS_REGION=us-west-2
 cdk bootstrap
 
-# Deploy all stacks
-cdk deploy --all
-
-# Note the outputs: UserPoolId, ClientId, table names
+# Deploy all 4 stacks: DynamoDB, Cognito, DataLoader, AgentCoreRuntime
+cdk deploy --all --require-approval never
 ```
 
-### 2. Load Demo Data
+Note the four outputs from `EcommerceMcpAgentCoreStack`:
+- `ExecutionRoleArn`
+- `EcrUri`
+- `CognitoDiscoveryUrl`
+- `CognitoClientId`
+
+These are also stored in SSM under `/ecommerce-mcp/*` for convenience.
+
+### 2. Create Demo Users
 
 ```bash
-cd data
-python generate_data.py
-python load_data.py --region us-west-2
-
-cd ../scripts
-python create_cognito_users.py --region us-west-2
+python scripts/create_cognito_users.py --region us-west-2
 ```
 
-### 3. Deploy MCP Server
+### 3. Configure AgentCore Runtime
+
+Run from the `mcp_server/` directory:
 
 ```bash
-cd ../../mcp_server
+cd ../mcp_server
 
-# Build Docker image
-docker build -t ecommerce-mcp-server .
+agentcore configure \
+  -e server.py \
+  -p MCP \
+  -n ecommerce_mcp_server \
+  -er $(aws ssm get-parameter --name /ecommerce-mcp/execution-role-arn --query Parameter.Value --output text) \
+  -ecr $(aws ssm get-parameter --name /ecommerce-mcp/ecr-uri --query Parameter.Value --output text) \
+  -ac "{\"customJWTAuthorizer\":{\"discoveryUrl\":\"$(aws ssm get-parameter --name /ecommerce-mcp/cognito-discovery-url --query Parameter.Value --output text)\",\"allowedClients\":[\"$(aws ssm get-parameter --name /ecommerce-mcp/cognito-client-id --query Parameter.Value --output text)\",\"$(aws ssm get-parameter --name /ecommerce-mcp/mistral-client-id --query Parameter.Value --output text)\"]}}" \
+  -rha "Authorization" \
+  -r us-west-2 \
+  --non-interactive
+```
 
-# Push to ECR and deploy to ECS Fargate
-# See USER_GUIDE.md for detailed deployment steps
+> **Note:** Agent names must use underscores, not hyphens (`ecommerce_mcp_server`, not `ecommerce-mcp-server`).
+
+### 4. Deploy to AgentCore Runtime
+
+```bash
+agentcore deploy \
+  --env AWS_REGION=us-west-2 \
+  --env PRODUCTS_TABLE=ecommerce-products \
+  --env CUSTOMERS_TABLE=ecommerce-customers \
+  --env ORDERS_TABLE=ecommerce-orders \
+  --env REVIEWS_TABLE=ecommerce-reviews \
+  --env RETURNS_TABLE=ecommerce-returns
+```
+
+`agentcore deploy` (default mode) automatically:
+1. Creates a CodeBuild project in your account to build the ARM64 Docker image in the cloud
+2. Pushes the image to ECR
+3. Calls `CreateAgentRuntime` to register and launch the runtime
+
+No local Docker installation is required.
+
+The command outputs the Runtime ARN:
+```
+arn:aws:bedrock-agentcore:<region>:<account>:runtime/ecommerce_mcp_server-<id>
+```
+
+### 5. Validate
+
+```bash
+python scripts/test_auth_methods.py \
+  --runtime-arn <ARN from step 4> \
+  --region us-west-2
 ```
 
 ---
@@ -97,153 +156,187 @@ docker build -t ecommerce-mcp-server .
 
 ---
 
+## Connecting from Mistral AI Studio
+
+### API Token (working today)
+
+Run the token generation script to get a fresh Cognito Bearer token:
+
+```bash
+python get_mistral_token.py            # demo1@example.com (default)
+python get_mistral_token.py --user demo3
+python get_mistral_token.py --email you@company.com --password YourPass
+```
+
+The script reads all account-specific values from SSM at runtime — no hardcoded IDs.
+The token and Connector Server URL are printed automatically.
+
+Configure the Mistral custom MCP connector:
+
+| Field | Value |
+|-------|-------|
+| Connector Server | *(printed by `get_mistral_token.py` — derived from SSM and agentcore status)* |
+| Authentication Method | API Token Authentication |
+| Header name | `Authorization` |
+| Header type | `Bearer` |
+| Header value | *(token printed by script, also saved to `mistral_token.txt`)* |
+
+To get the Connector Server URL manually:
+```bash
+RUNTIME_ARN=$(aws ssm get-parameter \
+  --name /ecommerce-mcp/agentcore-runtime-arn \
+  --query Parameter.Value --output text)
+
+python3 -c "
+import urllib.parse
+arn = '$RUNTIME_ARN'
+print('https://bedrock-agentcore.us-west-2.amazonaws.com/runtimes/'
+      + urllib.parse.quote(arn, safe='') + '/invocations')
+"
+# Or simply:
+agentcore status   # shows Agent ARN
+```
+
+Tokens expire after **24 hours**. Rerun the script and update the connector value to refresh.
+
+### OAuth 2.1 (working)
+
+OAuth 2.1 is fully supported. When Connect is clicked, Mistral opens a Cognito login popup — the user logs in once and Mistral handles token refresh automatically.
+
+Configure the Mistral custom MCP connector:
+
+| Field | Value |
+|-------|-------|
+| Connector Server | *(same URL as API Token — derived from `agentcore status` or SSM)* |
+| Authentication Method | OAuth 2.1 |
+| Client ID | *(from `aws ssm get-parameter --name /ecommerce-mcp/mistral-client-id`)* |
+| Client Secret | *(from `aws cognito-idp describe-user-pool-client` — see Cognito App Clients section)* |
+
+> **OAuth 2.1 vs API Token:** Both connect to the same AgentCore endpoint. OAuth 2.1 eliminates the 24-hour manual token rotation — Mistral handles token acquisition and refresh automatically via the Cognito Hosted UI.
+
+---
+
 ## Client Integration
 
 ### Strands Agents
 
 ```python
+import boto3
 from mcp.client.streamable_http import streamablehttp_client
 from strands import Agent
 from strands.tools.mcp import MCPClient
-import requests
 
-# Get authentication token
-response = requests.post(
-    "http://your-server:8000/auth/login",
-    json={"email": "demo1@example.com", "password": "Demo123!"}
+# Read account-specific values from SSM (no hardcoded IDs)
+ssm = boto3.client('ssm', region_name='us-west-2')
+CLIENT_ID   = ssm.get_parameter(Name='/ecommerce-mcp/cognito-client-id')['Parameter']['Value']
+RUNTIME_ARN = ssm.get_parameter(Name='/ecommerce-mcp/agentcore-runtime-arn')['Parameter']['Value']
+
+# Get a Cognito Bearer token
+cognito = boto3.client('cognito-idp', region_name='us-west-2')
+resp = cognito.initiate_auth(
+    ClientId=CLIENT_ID,
+    AuthFlow='USER_PASSWORD_AUTH',
+    AuthParameters={'USERNAME': 'demo1@example.com', 'PASSWORD': 'Demo123!'}
 )
-token = response.json()["access_token"]
+token = resp['AuthenticationResult']['AccessToken']
 
-# Create MCP client with authentication
+import urllib.parse
+RUNTIME_ENDPOINT = (
+    "https://bedrock-agentcore.us-west-2.amazonaws.com/runtimes/"
+    + urllib.parse.quote(RUNTIME_ARN, safe='') + "/invocations"
+)
+
 mcp_client = MCPClient(
     lambda: streamablehttp_client(
-        url="http://your-server:8000/mcp",
+        url=RUNTIME_ENDPOINT,
         headers={"Authorization": f"Bearer {token}"}
     )
 )
 
-# Use with Strands Agent
 with mcp_client:
     tools = mcp_client.list_tools_sync()
-    agent = Agent(
-        tools=tools,
-        system_prompt="You are a helpful shopping assistant."
-    )
-    response = agent("Search for laptops under $1500")
+    agent = Agent(tools=tools, system_prompt="You are a helpful shopping assistant.")
+    response = agent("Show me all electronics in stock under $500")
     print(response)
 ```
 
-### Mistral AI Studio
+---
 
-Configure in Settings:
+## Tool Reference
 
-1. **MCP Server URL**: `http://your-server:8000/mcp`
-2. **Authentication**: Basic Auth
-3. **Username**: `demo1@example.com`
-4. **Password**: `Demo123!`
+### `search_products`
+
+```
+search_products(
+    query: str = "",          # keyword search against name/description
+    category: str = None,     # "Electronics" | "Clothing" | "Books" | "Home"
+    min_price: float = None,
+    max_price: float = None,
+    in_stock_only: bool = False,  # True = only products with stock_quantity > 0
+    limit: int = 10
+)
+```
+
+> **Important:** `in_stock_only=True` filters by `stock_quantity > 0`. Do **not** pass `"in stock"` as a `query` string — that performs a text search against product names and will return 0 results.
+
+Examples:
+- All available products: `search_products(in_stock_only=True)`
+- Electronics in stock: `search_products(category="Electronics", in_stock_only=True)`
+- Laptops under $1500: `search_products(query="laptop", max_price=1500)`
 
 ---
 
-## API Endpoints
+## How the Server is Deployed
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/health` | GET | Health check |
-| `/auth/login` | POST | Get access token |
-| `/mcp` | POST | MCP protocol endpoint |
+The container runs on **Amazon Bedrock AgentCore Runtime** — a managed serverless container service distinct from ECS, Lambda, or Fargate:
 
-### Authentication
+- **On-demand execution**: container starts on first request (cold start ~10-20s), stays warm for subsequent calls
+- **No infrastructure management**: no clusters, task definitions, security groups, or load balancers
+- **ARM64 container**: built via CodeBuild, pushed to ECR, pulled by AgentCore at runtime
+- **Stateless**: `stateless_http=True` in `mcp.http_app()` — required for AgentCore's request routing
+
+## Transport: Streamable HTTP + SSE
+
+The server uses MCP's **Streamable HTTP** transport. When a client sends `Accept: text/event-stream`, responses are SSE-formatted:
+
+```
+event: message
+data: {"jsonrpc":"2.0","id":1,"result":{"tools":[...]}}
+```
+
+Clients must read the response as a stream and parse `data:` lines. Plain JSON is returned when the client sends only `Accept: application/json`.
+
+---
+
+## Cognito App Clients
+
+Two app clients are provisioned in the Cognito User Pool. Retrieve their IDs from SSM or CDK outputs:
 
 ```bash
-# Get access token
-curl -X POST http://your-server:8000/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email": "demo1@example.com", "password": "Demo123!"}'
+# API Token client (mcp-client)
+aws ssm get-parameter --name /ecommerce-mcp/cognito-client-id \
+  --query Parameter.Value --output text
 
-# Response
-{
-  "access_token": "eyJhbGc...",
-  "token_type": "Bearer",
-  "expires_in": 86400,
-  "customer_id": "cust-001"
-}
+# Mistral OAuth 2.1 client (mistral-oauth-client)
+aws ssm get-parameter --name /ecommerce-mcp/mistral-client-id \
+  --query Parameter.Value --output text
+
+# Mistral OAuth 2.1 client secret (sensitive — never commit this)
+aws cognito-idp describe-user-pool-client \
+  --user-pool-id $(aws cloudformation describe-stacks \
+    --stack-name EcommerceMcpCognitoStack \
+    --query "Stacks[0].Outputs[?OutputKey=='UserPoolId'].OutputValue" \
+    --output text) \
+  --client-id $(aws ssm get-parameter --name /ecommerce-mcp/mistral-client-id \
+    --query Parameter.Value --output text) \
+  --query "UserPoolClient.ClientSecret" --output text
 ```
 
----
+| Client name | Secret | Used for |
+|-------------|--------|----------|
+| mcp-client | No | API Token flow (`get_mistral_token.py`), Strands Agents |
+| mistral-oauth-client | Yes | OAuth 2.1 flow (Mistral AI Studio) — fully working |
 
-## Architecture Overview
-
-```
-+------------------+     +-------------------+
-|  Strands Agent   |     | Mistral AI Studio |
-+--------+---------+     +---------+---------+
-         |                         |
-         |   Streamable HTTP MCP   |
-         +------------+------------+
-                      |
-         +------------v------------+
-         |   MCP Server (:8000)    |
-         |   - /health             |
-         |   - /auth/login         |
-         |   - /mcp (MCP protocol) |
-         +------------+------------+
-                      |
-    +-----------------+------------------+
-    |                 |                  |
-+---v---+       +-----v-----+      +-----v-----+
-|Cognito|       | DynamoDB  |      | DynamoDB  |
-| Auth  |       | Products  |      | Orders    |
-+-------+       +-----------+      +-----------+
-```
-
-
----
-## Sample Questions
-
-  Product Search (Public)
-
-  - "Search for laptops under ` $1500` "
-  - "Find electronics between ` $100`  and ` $500` "
-  - "Search for products in the Home category"
-
-  Product Reviews (Public)
-
-  - "Show me reviews for the laptop I just found"
-  - "Are there any 5-star reviews for that product?"
-
-  Order History (Authenticated)
-
-  - "Show me my purchase history"
-  - "What have I bought recently?"
-  - "Show me my last 5 orders"
-
-  Place Orders (Authenticated)
-
-  - "Order that laptop for me"
-  - "Buy 2 of the wireless headphones"
-
-  Write Reviews (Authenticated)
-
-  - "Write a 5-star review for my last purchase saying it was excellent quality"
-
-  Returns (Authenticated)
-
-  - "Start a return - the product doesn't match the description"
-
-  Multi-Turn Conversations
-
-  👤 User: Search for laptops
-  
-  👤 User: Show me reviews for the first one
-  
-  👤 User: Order it for me
-  
-  👤 User: Now show my order history
-  
-  👤 User: Write a 5-star review saying great laptop
-
-
-  
 ---
 
 ## Environment Variables
@@ -252,40 +345,31 @@ curl -X POST http://your-server:8000/auth/login \
 |----------|-------------|---------|
 | `PORT` | Server port | 8000 |
 | `AWS_REGION` | AWS region | us-west-2 |
-| `COGNITO_USER_POOL_ID` | Cognito User Pool ID | Required |
-| `COGNITO_CLIENT_ID` | Cognito App Client ID | Required |
 | `PRODUCTS_TABLE` | DynamoDB products table | ecommerce-products |
 | `CUSTOMERS_TABLE` | DynamoDB customers table | ecommerce-customers |
 | `ORDERS_TABLE` | DynamoDB orders table | ecommerce-orders |
 | `REVIEWS_TABLE` | DynamoDB reviews table | ecommerce-reviews |
 | `RETURNS_TABLE` | DynamoDB returns table | ecommerce-returns |
 
-
 ---
 
 ## Security
 
-- Cognito-managed password hashing
-- JWT token authentication with 24-hour expiration
-- Context-based user isolation (each user sees only their data)
-- No secrets in code or logs
+- JWT signature, issuer, audience, and `allowedClients` validated by AgentCore (not server code)
+- `custom:customer_id` extracted via `cognito.get_user()` (API Token) or `cognito.admin_get_user()` (OAuth 2.1) — both use IAM, not local JWT parsing
+- Tool-level auth checks (`if customer_id == 'anonymous'`) provide defense in depth
+- Per-request user isolation via `ContextVar`
+- AgentCore has no "passthrough" mode — all requests require a valid Cognito Bearer token
 
 ---
 
 ## Documentation
 
-- [User Guide](./USER_GUIDE.md) - Detailed deployment guide
-- [Examples](./examples/README.md) - Python integration examples
-- [CDK Setup](./ecommerce-mcp-cdk/README.md) - Infrastructure deployment
+- [User Guide](./USER_GUIDE.md) — Detailed deployment and troubleshooting guide
+- [CDK Setup](./ecommerce-mcp-cdk/README.md) — Infrastructure stacks reference
 
 ---
 
-## License
-
-This is a demo project for educational purposes.
-
----
-
-**Built with:** FastMCP, AWS Cognito, DynamoDB, ECS Fargate
-**Version:** 2.0.0
-**Last Updated:** 2026-01-06
+**Built with:** FastMCP 3.x, Amazon Bedrock AgentCore Runtime, AWS Cognito, DynamoDB, CodeBuild, ECR
+**Version:** 3.2.0
+**Last Updated:** March 2026

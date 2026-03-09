@@ -12,6 +12,7 @@ import aws_cdk as cdk
 from stacks.dynamodb_stack import DynamoDBStack
 from stacks.cognito_stack import CognitoStack
 from stacks.data_loader_stack import DataLoaderStack
+from stacks.agentcore_runtime_stack import AgentCoreRuntimeStack
 
 app = cdk.App()
 
@@ -51,6 +52,24 @@ data_loader_stack = DataLoaderStack(
 # Add dependencies
 data_loader_stack.add_dependency(dynamodb_stack)
 data_loader_stack.add_dependency(cognito_stack)
+
+# Stack 4: AgentCore Runtime supporting infrastructure (IAM role + ECR + SSM)
+agentcore_stack = AgentCoreRuntimeStack(
+    app, "EcommerceMcpAgentCoreStack",
+    description="AgentCore Runtime execution role, ECR repo, and SSM params for E-Commerce MCP Server",
+    products_table=dynamodb_stack.products_table,
+    customers_table=dynamodb_stack.customers_table,
+    orders_table=dynamodb_stack.orders_table,
+    reviews_table=dynamodb_stack.reviews_table,
+    returns_table=dynamodb_stack.returns_table,
+    user_pool=cognito_stack.user_pool,
+    app_client=cognito_stack.app_client,
+    mistral_client=cognito_stack.mistral_client,
+    region=region,
+    env=env,
+)
+agentcore_stack.add_dependency(dynamodb_stack)
+agentcore_stack.add_dependency(cognito_stack)
 
 # Add tags to all resources for cost tracking
 cdk.Tags.of(app).add("Project", "EcommerceMcpServer")
