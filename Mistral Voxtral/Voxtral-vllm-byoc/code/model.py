@@ -170,34 +170,46 @@ def start_vllm_server():
         if exec_type == "direct":
             cmd = [
                 exec_cmd, "serve", model_id,
-                "--dtype", dtype,
-                "--gpu-memory-utilization", str(gpu_memory_utilization),
-                "--max-model-len", str(max_model_len),
-                "--tensor-parallel-size", str(tensor_parallel_size),
-                "--tokenizer-mode", tokenizer_mode,
-                "--config-format", config_format,
-                "--load-format", load_format,
-                "--host", "127.0.0.1",
-                "--port", "8000",
-                "--served-model-name", model_id,
-                "--disable-log-requests"
             ]
         else:
             cmd = [
                 exec_cmd, "-m", "vllm.entrypoints.openai.api_server",
                 "--model", model_id,
-                "--dtype", dtype,
-                "--gpu-memory-utilization", str(gpu_memory_utilization),
-                "--max-model-len", str(max_model_len),
-                "--tensor-parallel-size", str(tensor_parallel_size),
-                "--tokenizer-mode", tokenizer_mode,
-                "--config-format", config_format,
-                "--load-format", load_format,
-                "--host", "127.0.0.1",
-                "--port", "8000",
-                "--served-model-name", model_id,
-                "--disable-log-requests"
             ]
+
+        cmd.extend([
+            "--dtype", dtype,
+            "--gpu-memory-utilization", str(gpu_memory_utilization),
+            "--max-model-len", str(max_model_len),
+            "--tensor-parallel-size", str(tensor_parallel_size),
+            "--tokenizer-mode", tokenizer_mode,
+            "--config-format", config_format,
+            "--load-format", load_format,
+            "--host", "127.0.0.1",
+            "--port", "8000",
+            "--served-model-name", model_id,
+        ])
+
+        # Multimodal audio settings (critical for Voxtral)
+        # --limit-mm-per-prompt expects JSON, e.g. '{"audio": 8}'
+        limit_mm = config.get("option.limit_mm_per_prompt")
+        if limit_mm:
+            # Convert "audio:8" format to JSON '{"audio": 8}'
+            if ":" in limit_mm and not limit_mm.startswith("{"):
+                parts = limit_mm.split(":")
+                limit_mm = json.dumps({parts[0]: int(parts[1])})
+            cmd.extend(["--limit-mm-per-prompt", limit_mm])
+
+        # Memory optimization
+        cpu_offload = config.get("option.cpu_offload_gb")
+        if cpu_offload:
+            cmd.extend(["--cpu-offload-gb", cpu_offload])
+
+        # Performance flags
+        if config.get("option.enable_chunked_prefill", "").lower() == "true":
+            cmd.append("--enable-chunked-prefill")
+        if config.get("option.enable_prefix_caching", "").lower() == "true":
+            cmd.append("--enable-prefix-caching")
 
         if trust_remote_code:
             cmd.append("--trust-remote-code")
@@ -222,11 +234,18 @@ def start_vllm_server():
             preexec_fn=os.setsid
         )
 
-        # Monitor logs in background
+        logger.warning(f"[vLLM] Starting with command: {' '.join(cmd)}")
+
+        # Monitor logs in background - log all output for debugging
         def monitor_logs():
             for line in vllm_server_process.stdout:
-                if "ERROR" in line or "CRITICAL" in line:
-                    logger.error(f"[vLLM] {line.strip()}")
+                line = line.strip()
+                if not line:
+                    continue
+                if "ERROR" in line or "CRITICAL" in line or "Traceback" in line:
+                    logger.error(f"[vLLM] {line}")
+                else:
+                    logger.warning(f"[vLLM] {line}")
 
         log_thread = threading.Thread(target=monitor_logs, daemon=True)
         log_thread.start()
@@ -887,8 +906,6 @@ app = FastAPI(
     title="Voxtral vLLM OpenAI-Compatible Server",
     version="2.0.0",
     lifespan=lifespan,
-    # Limit request body size to prevent DoS
-    max_request_size=100 * 1024 * 1024  # 100MB max
 )
 
 @app.get("/ping")
