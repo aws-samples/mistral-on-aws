@@ -10,7 +10,7 @@
 
 # Core AWS and SageMaker
 boto3>=1.34.0
-sagemaker>=2.200.0,<3.0.0
+sagemaker>=3.4.0
 
 # Data processing
 pandas>=2.0.0
