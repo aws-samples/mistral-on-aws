@@ -1,37 +1,8 @@
 # Additional Python dependencies for Voxtral vLLM container
-# Core dependencies are installed in Dockerfile, these are supplementary
+# IMPORTANT: Do NOT add packages that could upgrade torch/torchvision/vllm —
+# this breaks the base image's carefully matched CUDA/torch/vLLM stack.
+# All core deps (fastapi, uvicorn, openai, requests, pydantic) are already
+# in the vLLM base image. Only list packages that model.py actually imports
+# and that are NOT already in the base image or Dockerfile.
 
-# API and web framework dependencies
-fastapi==0.115.4
-uvicorn[standard]==0.32.0
-gunicorn>=23.0.0
-pydantic>=2.0.0
-
-# OpenAI client for vLLM integration
-openai==1.99.1
-
-# Mistral Common for audio processing and transcription
-mistral_common[audio]==1.8.2
-
-# HTTP and networking
-httpx>=0.27.0
-aiohttp>=3.11.0
-websockets>=13.0
-requests==2.32.4
-
-# Audio processing (additional libraries)
-scipy>=1.14.0
-numpy>=1.26.0
-resampy>=0.4.3
-
-# Utilities
-python-multipart>=0.0.12
-python-json-logger>=2.0.7
-psutil>=6.0.0
-
-# AWS and cloud integrations
-aioboto3>=13.0.0
-aiobotocore>=2.15.0
-
-# Monitoring and observability
-prometheus-client>=0.21.0
+# (Currently empty — all needed packages are installed in the Dockerfile)
