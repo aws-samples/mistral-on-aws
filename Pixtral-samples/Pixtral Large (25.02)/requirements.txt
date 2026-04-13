@@ -56,7 +56,7 @@ packaging==23.2
 pandas==2.2.3
 parso==0.8.4
 pexpect==4.9.0
-Pillow==12.1.1
+Pillow==12.2.0
 platformdirs==4.3.7
 prompt_toolkit==3.0.50
 protobuf==5.29.6
