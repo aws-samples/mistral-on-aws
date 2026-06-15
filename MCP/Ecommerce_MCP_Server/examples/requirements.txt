@@ -1,0 +1,18 @@
+# E-Commerce MCP Server - Example Dependencies
+# Install with: pip install -r requirements.txt
+
+# Core HTTP client (required)
+requests>=2.31.0
+httpx>=0.27.0
+
+# Strands Agent Framework (optional - for agent examples)
+strands-agents>=0.1.0
+strands-agents-tools>=0.1.0
+
+# MCP Protocol Client (optional - for native MCP integration)
+mcp>=1.0.0
+
+# boto3>=1.34.0          # For AWS Bedrock
+
+# Async support
+anyio>=4.0.0

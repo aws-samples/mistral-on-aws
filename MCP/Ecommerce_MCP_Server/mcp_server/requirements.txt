@@ -1,0 +1,20 @@
+# MCP SDK
+mcp>=1.0.0
+
+# FastMCP framework (required by AgentCore Runtime)
+fastmcp>=0.1.0
+
+# AWS SDK
+boto3>=1.34.0
+botocore>=1.34.0
+
+# Data validation
+pydantic>=2.5.0
+
+# Web framework
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+
+# Utilities
+python-dotenv>=1.0.0
+python-dateutil>=2.8.2
