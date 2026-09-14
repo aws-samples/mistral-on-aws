@@ -8,5 +8,5 @@ dependencies = [
     "boto3>=1.37.25",
     "notebook>=7.3.3",
     "numpy>=2.2.4",
-    "python-dotenv>=1.1.0",
+    "python-dotenv>=1.2.2",
 ]
